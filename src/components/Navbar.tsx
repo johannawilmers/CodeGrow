@@ -8,10 +8,6 @@ const Navbar = () => {
         Home
       </NavLink>
       <span className="divider">|</span>
-      <NavLink to="/about" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
-        About
-      </NavLink>
-      <span className="divider">|</span>
       <NavLink to="/mypage" className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}>
         My Page
       </NavLink>
