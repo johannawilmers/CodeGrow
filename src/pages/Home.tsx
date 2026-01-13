@@ -1,5 +1,12 @@
+import ThemesDisplay from '../components/ThemeDisplay';
 const Home = () => {
-  return <h1>Welcome to CodeGrow 🌱</h1>;
+  return (
+  <div>
+    <h1>Welcome to CodeGrow 🌱</h1>
+  <ThemesDisplay />
+  </div>
+  
+  )
 };
 
 export default Home;

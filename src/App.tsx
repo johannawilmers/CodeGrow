@@ -1,12 +1,17 @@
-import AppRoutes from "./routes/AppRoutes";
-import TestCollectionDisplay from "./components/TestCollectionDisplay";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import NavBar from "./components/Navbar";
+import Home from "./pages/Home";
+import Topics from "./pages/Topics";
 
 function App() {
   return (
-    <>
-      <AppRoutes />
-      <TestCollectionDisplay />
-    </>
+    <BrowserRouter>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/theme/:id" element={<Topics />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
