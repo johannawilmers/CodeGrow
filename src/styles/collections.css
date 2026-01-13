@@ -1,0 +1,98 @@
+/* Container styling */
+.themes-collection,
+.topics-collection {
+  background-color: white;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings */
+.themes-collection h2,
+.topics-collection h2 {
+  color: #2E7D32;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Remove default ul styles */
+.themes-collection ul,
+.topics-collection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  
+  /* Make list horizontal */
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  /* Optional: hide scrollbar but keep scroll */
+  scrollbar-width: none; /* Firefox */
+}
+
+.themes-collection ul::-webkit-scrollbar,
+.topics-collection ul::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Each task as a green "step" */
+.themes-collection li,
+.topics-collection li {
+  background-color: #4CAF50;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 30px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  position: relative;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0; /* prevent shrinking */
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect: slightly darker green */
+.themes-collection li:hover,
+.topics-collection li:hover {
+  background-color: #2E7D32;
+}
+
+/* Add connecting "road" lines between tasks */
+.themes-collection li:not(:last-child)::after,
+.topics-collection li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1rem;
+  width: 2rem;
+  height: 4px;
+  background-color: #4CAF50;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Make the link fill the whole list item */
+.themes-collection a,
+.topics-collection a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+/* On hover, slightly shift the text */
+.themes-collection a:hover,
+.topics-collection a:hover {
+  transform: translateX(5px);
+}
+
+/* Optional description text below */
+.themes-collection p,
+.topics-collection p {
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5rem;
+  white-space: normal;
+  max-width: 300px;
+}

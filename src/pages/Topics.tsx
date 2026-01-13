@@ -53,8 +53,9 @@ const Topics = () => {
 
   return (
     <>
-      <h1>{themeName}</h1>
-      <div>
+    <div className="main-content">
+    <h1>{themeName}</h1>
+      <div className="topics-collection">
         <h2>Topics</h2>
         {topics.length === 0 ? (
           <p>No topics found</p>
@@ -68,6 +69,9 @@ const Topics = () => {
           </ul>
         )}
       </div>
+    </div>
+    
+      
     </>
   );
 };
