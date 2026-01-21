@@ -1,6 +1,6 @@
 const MyPage = () => {
   return (
-    <div className="my-page">
+    <div className="main-content">
       <h1>My Page</h1>
       <p>Welcome to your personal page.</p>
     </div>
