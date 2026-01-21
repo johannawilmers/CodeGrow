@@ -14,11 +14,6 @@
 
 }
 
-.navbar .divider {
-  color: #777;
-  margin: 0 0.25rem;
-}
-
 .nav-link {
   background: linear-gradient(135deg, #81C784, #66BB6A);
   color: white;

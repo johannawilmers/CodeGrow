@@ -86,6 +86,89 @@ body {
   max-width: 1600px;
   margin: 0 auto;
   width: 100%;
-  padding-top: 100px;
+  padding-top: 110px; /* increase to match larger navbar */
 }
+
+/* Navbar styles */
+.app-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 2rem; /* slightly larger padding */
+  background: var(--primary-color);
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-logo {
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  font-size: 1.25rem; /* slightly larger logo */
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin-right: 1rem;
+  font-weight: 600;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Streak badge */
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.14);
+  padding: 0.55rem 1rem; /* increased padding */
+  border-radius: 999px;
+  font-weight: 800;
+  color: #fff;
+  transform: none;
+}
+
+.streak-emoji {
+  font-size: 1.35rem; /* bigger emoji */
+}
+
+.streak-number {
+  font-weight: 900;
+  font-size: 1.15rem; /* bigger, bolder number */
+}
+
+/* Logout button */
+.logout-btn {
+  background: #ff7043;
+  border: none;
+  color: white;
+  padding: 0.5rem 0.9rem; /* slightly larger logout button */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.logout-btn:hover {
+  opacity: 0.95;
+}
+
+/* Ensure page content not hidden under fixed navbar (you already have padding-top; confirm it's >= nav height) */
+/* .main-content { padding-top: 100px; } */
 
