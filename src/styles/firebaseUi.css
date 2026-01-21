@@ -1,0 +1,41 @@
+/* src/styles/firebaseui-custom.css */
+
+/* ✨ NEW: Container for the entire sign-in page content ✨ */
+.signin-page-container {
+  display: flex;             /* Use Flexbox */
+  flex-direction: column;    /* Stack items vertically (h2 then FirebaseUI form) */
+  align-items: center;       /* Center items horizontally */
+  justify-content: center;   /* Center items vertically */
+  min-height: 100vh;         /* Take full viewport height for effective vertical centering */
+  padding: 20px;             /* Add some padding around the content */
+  box-sizing: border-box;    /* Include padding in the element's total width and height */
+  background-color: #f8f9fa; /* Optional: A light background for the whole page */
+}
+
+/* ✨ NEW: Style for the H2 title within the new container ✨ */
+.signin-page-container h2 {
+  text-align: center;       /* Ensure the text itself is centered */
+  margin-bottom: 25px;      /* Space between title and the form */
+  color: #333;
+  font-size: 28px;
+  /* Optional: Constrain the width of the title to align visually with the form */
+  max-width: 400px;
+}
+
+/* ✨ MODIFIED: General FirebaseUI container styling ✨ */
+.firebaseui-container {
+  max-width: 400px;          /* Keep max width */
+  width: 100%;               /* Ensure it takes full width up to max-width */
+  margin: 0;                 /* ✨ IMPORTANT: Remove auto margins from here,
+                                   the flexbox parent (.signin-page-container)
+                                   is now handling the centering. ✨ */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  text-align: center;
+  font-family: 'Roboto', 'Helvetica', Arial, sans-serif;
+}
+
+/* ... (rest of your existing custom CSS from the previous response) ... */
+/* Ensure your custom button/input styles are still active */

@@ -1,13 +1,9 @@
-// src/components/SignInScreen.tsx
 import React, { useEffect, useRef } from 'react';
 import * as firebaseui from 'firebaseui';
-
-// Import the 'firebase' namespace for accessing providers and types
-import firebase from 'firebase/compat/app'; // <--- CRUCIAL ADDITION
-import 'firebase/compat/auth';             // <--- CRUCIAL ADDITION
-                                          //      This ensures 'firebase.auth' namespace is available
-
-import { auth } from '../firebase'; // Import your initialized auth instance (this is the service instance)
+import 'firebaseui/dist/firebaseui.css'; 
+import firebase from 'firebase/compat/app'; 
+import 'firebase/compat/auth';           
+import { auth } from '../firebase'; 
 
 interface SignInScreenProps {
   onSignInSuccessWithAuthResult?: (authResult: firebase.auth.UserCredential) => boolean;
@@ -44,10 +40,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
       callbacks: {
         signInSuccessWithAuthResult: onSignInSuccessWithAuthResult,
       },
-      // Optional: Terms of Service URL.
-      // tosUrl: '<your-tos-url>',
-      // Optional: Privacy Policy URL.
-      // privacyPolicyUrl: '<your-privacy-policy-url>',
+
     };
 
     // Start FirebaseUI if the DOM element is available
@@ -67,9 +60,8 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
   }, [onSignInSuccessWithAuthResult, signInSuccessUrl]); // Re-run effect if these props change
 
   return (
-    <div>
-      <h2>Sign In to CodeGrow</h2>
-      <div ref={uiRef} id="firebaseui-auth-container"></div>
+    <div className="signin-page-container" >
+      <div ref={uiRef} id="firebaseui-auth-container"><h2>Sign In to CodeGrow</h2></div>
     </div>
   );
 };

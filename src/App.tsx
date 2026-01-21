@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type JSX } from "react";
+import { useState, useEffect, type JSX } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // Import Navigate for protected routes
 import NavBar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -8,8 +8,7 @@ import Social from "./pages/Social";
 import SignInScreen from "./components/SignInScreen"; 
 import { auth } from "./firebase"; 
 import type { User } from 'firebase/auth'; 
-                                    
-
+                                  
 
 function App() {
   const [user, setUser] = useState<User | null>(null); 
@@ -55,30 +54,19 @@ function App() {
 
   return (
     <BrowserRouter>
-      {/* <NavBar user={user} onSignOut={handleSignOut} /> */}
-      <NavBar/>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/theme/:id" element={<Topics />} />
-        <Route path="/login" element={<SignInScreen />} />
-
-        <Route
-          path="/mypage"
-          element={
-            <ProtectedRoute>
-              <MyPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/social"
-          element={
-            <ProtectedRoute>
-              <Social />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      {user ? (
+        <>
+          <NavBar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/theme/:id" element={<Topics />} />
+            <Route path="/mypage" element={<MyPage />} />
+            <Route path="/social" element={<Social />} />
+          </Routes>
+        </>
+      ) : (
+        <SignInScreen />
+      )}
     </BrowserRouter>
   );
 }
