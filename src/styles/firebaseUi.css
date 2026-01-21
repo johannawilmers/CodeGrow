@@ -1,41 +1,254 @@
 /* src/styles/firebaseui-custom.css */
 
-/* ✨ NEW: Container for the entire sign-in page content ✨ */
+/* --- Global / Page Level Centering --- */
+/* Ensure html, body, and root element take full height for vertical centering */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  box-sizing: border-box; /* Include padding in height calculation */
+}
+
+/* Overall container for the entire sign-in page content */
 .signin-page-container {
-  display: flex;             /* Use Flexbox */
-  flex-direction: column;    /* Stack items vertically (h2 then FirebaseUI form) */
-  align-items: center;       /* Center items horizontally */
-  justify-content: center;   /* Center items vertically */
-  min-height: 100vh;         /* Take full viewport height for effective vertical centering */
-  padding: 20px;             /* Add some padding around the content */
-  box-sizing: border-box;    /* Include padding in the element's total width and height */
-  background-color: #f8f9fa; /* Optional: A light background for the whole page */
+  display: flex;
+  flex-direction: column; /* Stack items vertically (h2 then FirebaseUI form) */
+  align-items: center;    /* Center items horizontally */
+  justify-content: center;/* Center items vertically */
+  min-height: 100vh;      /* Take full viewport height for effective vertical centering */
+  width: 100%;            /* Ensure it takes full width */
+  padding: 20px;          /* Add some padding around the content */
+  box-sizing: border-box; /* Include padding in width and height */
+  background-color: #f0f2f5; /* A very light, modern background color */
+  font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif; /* Modern, clean font stack */
+  color: #333; /* Darker text for readability */
 }
 
-/* ✨ NEW: Style for the H2 title within the new container ✨ */
+/* Styling for the H2 title within the new container */
 .signin-page-container h2 {
-  text-align: center;       /* Ensure the text itself is centered */
-  margin-bottom: 25px;      /* Space between title and the form */
-  color: #333;
-  font-size: 28px;
-  /* Optional: Constrain the width of the title to align visually with the form */
-  max-width: 400px;
-}
-
-/* ✨ MODIFIED: General FirebaseUI container styling ✨ */
-.firebaseui-container {
-  max-width: 400px;          /* Keep max width */
-  width: 100%;               /* Ensure it takes full width up to max-width */
-  margin: 0;                 /* ✨ IMPORTANT: Remove auto margins from here,
-                                   the flexbox parent (.signin-page-container)
-                                   is now handling the centering. ✨ */
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
   text-align: center;
-  font-family: 'Roboto', 'Helvetica', Arial, sans-serif;
+  margin-bottom: 30px; /* More space below the title */
+  color: #2c3e50; /* A slightly darker, more prominent color for the title */
+  font-size: 2.2em; /* Larger, more impactful title */
+  font-weight: 600; /* Bolder for impact */
+  letter-spacing: -0.02em; /* Slightly tighter letter spacing */
+  max-width: 400px;
+  width: 100%;
 }
 
-/* ... (rest of your existing custom CSS from the previous response) ... */
-/* Ensure your custom button/input styles are still active */
+/* --- FirebaseUI Widget Container Styling --- */
+/* Target the div where FirebaseUI renders */
+#firebaseui-auth-container {
+  width: 100%;
+  max-width: 420px; /* Slightly wider card */
+  margin: 0; /* Important: Remove any default margins */
+  box-sizing: border-box;
+}
+
+/* Target the inner FirebaseUI card/form itself */
+.firebaseui-container {
+  padding: 40px; /* Generous padding inside the card */
+  border-radius: 12px; /* Softer, more modern rounded corners */
+  background-color: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* More pronounced, softer shadow */
+  text-align: center;
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; /* Smooth transitions */
+}
+
+.firebaseui-container:hover {
+  transform: translateY(-5px); /* Subtle lift on hover */
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Input Fields --- */
+.firebaseui-idp-text-input,
+.firebaseui-input {
+  width: 100%; /* Full width */
+  padding: 14px 16px; /* Increased padding for better touch targets */
+  margin-bottom: 20px; /* More space between inputs */
+  border: 1px solid #e0e0e0; /* Lighter, subtle border */
+  border-radius: 8px; /* Rounded input fields */
+  font-size: 1.05em; /* Slightly larger font */
+  line-height: 1.5;
+  color: #333;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.firebaseui-idp-text-input:focus,
+.firebaseui-input:focus {
+  outline: none;
+  border-color: #007bff; /* Primary blue for focus */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Soft focus ring */
+}
+
+/* Placeholder text color */
+.firebaseui-input::placeholder {
+  color: #a0a0a0;
+}
+
+/* --- Primary Form Button (e.g., "Sign In") --- */
+.firebaseui-form-button {
+  width: 100%;
+  padding: 15px; /* More generous padding */
+  background-color: #007bff; /* A vibrant primary blue */
+  color: #fff;
+  border: none;
+  border-radius: 8px; /* Matches input fields */
+  font-size: 1.1em;
+  font-weight: 600; /* Bolder text */
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 10px; /* Space above the button */
+}
+
+.firebaseui-form-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+  box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); /* Subtle shadow on hover */
+}
+
+.firebaseui-form-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --- Social/Federated Login Buttons --- */
+.firebaseui-idp-button {
+  width: 100%;
+  padding: 12px; /* Consistent padding */
+  margin-bottom: 12px; /* Consistent spacing */
+  border: 1px solid #dcdcdc; /* Lighter border for social buttons */
+  border-radius: 8px; /* Consistent rounded corners */
+  background-color: #ffffff;
+  color: #555; /* Neutral text color */
+  font-size: 1.05em;
+  text-align: center; /* Center the text */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.firebaseui-idp-button:hover {
+  background-color: #f8f8f8; /* Very subtle background change */
+  border-color: #c0c0c0; /* Slightly darker border on hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Light shadow on hover */
+}
+
+/* Icons for social buttons */
+.firebaseui-idp-icon {
+  margin-right: 15px; /* More space between icon and text */
+  width: 20px; /* Slightly larger icons */
+  height: 20px;
+  object-fit: contain;
+}
+
+/* --- Links (e.g., Forgot Password, Privacy Policy) --- */
+.firebaseui-link,
+.firebaseui-tos,
+.firebaseui-pp-link {
+  color: #007bff; /* Primary blue for links */
+  text-decoration: none;
+  font-size: 0.95em;
+  margin-top: 15px; /* Space above links if they appear after other elements */
+  display: inline-block; /* Allows margin-top */
+}
+
+.firebaseui-link:hover,
+.firebaseui-tos:hover,
+.firebaseui-pp-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Error Messages --- */
+.firebaseui-error-message {
+  color: #dc3545; /* Bootstrap-like red for errors */
+  font-size: 0.9em;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  text-align: left; /* Align error messages left for readability */
+}
+
+/* --- Text Separators (e.g., "OR") --- */
+.firebaseui-text-container {
+  position: relative;
+  text-align: center;
+  margin: 25px 0; /* More vertical space */
+  color: #a0a0a0; /* Lighter color */
+  font-size: 0.95em;
+}
+
+.firebaseui-text-container::before,
+.firebaseui-text-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #e0e0e0; /* Lighter line color */
+}
+
+/* --- Password Visibility Toggle --- */
+.firebaseui-toggle-visibility {
+  color: #007bff;
+  font-size: 0.95em;
+  cursor: pointer;
+  margin-left: 10px; /* If it's inline with input, give some space */
+}
+
+/* --- Loader --- */
+.firebaseui-spinner {
+  border-color: #007bff; /* Primary blue spinner */
+  border-top-color: transparent;
+}
+
+/* --- Labels --- */
+.firebaseui-label {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 8px;
+  text-align: left;
+  display: block;
+  font-weight: 500;
+}
+
+/* --- Specific styling for the 'Continue' button after email entry --- */
+.firebaseui-id-submit-button {
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.firebaseui-id-submit-button:hover {
+  background-color: #0056b3;
+  box-shadow: 0 3px 10px rgba(0, 123, 255, 0.2);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 600px) {
+  .firebaseui-container {
+    padding: 30px 20px; /* Reduce padding on smaller screens */
+    border-radius: 0; /* Sharper corners on small screens or just use the same */
+    box-shadow: none; /* Remove shadow on very small screens for a more native feel */
+    transform: none; /* Remove hover effect */
+  }
+
+  .signin-page-container {
+    padding: 10px;
+    background-color: #ffffff; /* White background on small screens */
+  }
+
+  .signin-page-container h2 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+  }
+}
+

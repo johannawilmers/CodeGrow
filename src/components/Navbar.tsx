@@ -1,4 +1,4 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import "./Navbar.css";
@@ -14,7 +14,6 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      {/* Left side: Navigation links */}
       <div className="nav-links">
         <NavLink
           to="/"
@@ -44,7 +43,6 @@ const Navbar = () => {
         </NavLink>
       </div>
 
-      {/* Right side: Logout button */}
       <button
         onClick={handleLogout}
         className="logout-button"

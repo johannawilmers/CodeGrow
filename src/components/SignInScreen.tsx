@@ -32,9 +32,7 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
         },
         // Google provider: Access GoogleAuthProvider from the 'firebase.auth' namespace
         firebase.auth.GoogleAuthProvider.PROVIDER_ID, // <-- CORRECTED
-        // Add other providers as configured in your Firebase project
-        // For example, if you enabled Phone authentication:
-        // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+
       ],
       // Optional callback for custom logic on successful sign-in
       callbacks: {
@@ -43,21 +41,17 @@ const SignInScreen: React.FC<SignInScreenProps> = ({
 
     };
 
-    // Start FirebaseUI if the DOM element is available
     if (uiRef.current) {
       ui.start(uiRef.current, uiConfig);
     } else {
       console.error('FirebaseUI container not found');
     }
-
-    // Cleanup FirebaseUI on component unmount to prevent memory leaks
     return () => {
-      // Check if ui instance exists before resetting
       if (ui) {
         ui.reset();
       }
     };
-  }, [onSignInSuccessWithAuthResult, signInSuccessUrl]); // Re-run effect if these props change
+  }, [onSignInSuccessWithAuthResult, signInSuccessUrl]); 
 
   return (
     <div className="signin-page-container" >

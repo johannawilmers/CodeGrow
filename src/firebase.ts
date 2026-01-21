@@ -2,7 +2,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth'; // Essential for FirebaseUI Auth
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
 // Your Firebase configuration (replace with your actual values)
@@ -16,7 +15,6 @@ const firebaseConfig = {
   measurementId: "G-5BJVRH8BBG"
 };
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
 export const db = getFirestore(app);
 
