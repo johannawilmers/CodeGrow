@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Topics from "./pages/Topics";
 import MyPage from "./pages/MyPage";
 import Social from "./pages/Social";
+import TaskPage from "./pages/TaskPage";
 import Login from "./components/Login";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/theme/:id" element={<Topics />} />
+          <Route path="/task" element={<TaskPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/social" element={<Social />} />
         </Routes>

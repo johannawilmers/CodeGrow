@@ -63,7 +63,7 @@ const Topics = () => {
           <ul>
             {topics.map((topic) => (
               <li key={topic.id}>
-                <Link to={`/task/${topic.id}`}>{topic.name}</Link>
+                <Link to={`/task`}>{topic.name}</Link>
               </li>
             ))}
           </ul>
