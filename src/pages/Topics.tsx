@@ -6,6 +6,7 @@ import { db } from "../firebase";
 interface Topic {
   id: string;
   name: string;
+  taskId: string;
 }
 
 const Topics = () => {
@@ -28,9 +29,24 @@ const Topics = () => {
           for (const topicRef of topicRefs) {
             const topicSnap = await getDoc(topicRef as DocumentReference);
             if (topicSnap.exists()) {
+              const topicData = topicSnap.data();
+              // Extract task ID from the task reference path
+              let taskId = topicSnap.id; // fallback to topic id
+              if (topicData.task) {
+                if (typeof topicData.task === 'string' && topicData.task.startsWith('/tasks/')) {
+                  // Extract ID from path like "/tasks/e6LiTlcuqWgun8OY2RF3"
+                  taskId = topicData.task.split('/')[2];
+                } else if (typeof topicData.task === 'object' && 'id' in topicData.task) {
+                  taskId = topicData.task.id;
+                }
+              } else if (topicData.taskId) {
+                taskId = topicData.taskId;
+              }
+
               resolvedTopics.push({
                 id: topicSnap.id,
-                name: topicSnap.data().name || "Unnamed",
+                name: topicData.name || "Unnamed",
+                taskId: taskId,
               });
             }
           }
@@ -63,7 +79,7 @@ const Topics = () => {
           <ul>
             {topics.map((topic) => (
               <li key={topic.id}>
-                <Link to={`/task`}>{topic.name}</Link>
+                <Link to={`/task/${topic.taskId}`}>{topic.name}</Link>
               </li>
             ))}
           </ul>

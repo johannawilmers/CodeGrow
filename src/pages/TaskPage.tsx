@@ -1,17 +1,18 @@
-import { useState } from "react";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 const RUN_JAVA_URL =
   "https://us-central1-codegrow-5894a.cloudfunctions.net/runJava";
 
-const TaskPage = ({
-  userId,
-  taskId,
-}: {
-  userId?: string;
-  taskId?: string;
-}) => {
+const TaskPage = () => {
+  const { taskId } = useParams<{ taskId: string }>();
+  const [taskName, setTaskName] = useState<string>("");
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  // Java compiler state
   const [code, setCode] = useState<string>(`public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, Codegrow!");
@@ -20,6 +21,37 @@ const TaskPage = ({
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      if (!taskId) return;
+
+      try {
+        setPageLoading(true);
+        setPageError(null);
+
+        // Fetch the task from the tasks collection
+        const taskDocRef = doc(db, "tasks", taskId);
+        const taskSnap = await getDoc(taskDocRef);
+
+        if (!taskSnap.exists()) {
+          setPageError("Task not found");
+          return;
+        }
+
+        const taskInfo = taskSnap.data();
+        setTaskName(taskInfo.name || taskInfo.title || "Unnamed Task");
+
+      } catch (err) {
+        console.error("Error fetching task:", err);
+        setPageError(err instanceof Error ? err.message : "Failed to fetch task");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+
+    fetchTask();
+  }, [taskId]);
 
   const runCode = async () => {
     setLoading(true);
@@ -43,15 +75,9 @@ const TaskPage = ({
       setOutput(data.output ?? "");
 
       // VERY naive success check (still fine for now 👍)
-      if (data.output?.includes("Hello") && userId && taskId) {
-        await setDoc(
-          doc(db, "users", userId, "tasks", taskId),
-          {
-            completed: true,
-            completedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
+      if (data.output?.includes("Hello") && taskId) {
+        // TODO: Add user authentication to save completion status
+        console.log("Code ran successfully!");
       }
     } catch (err) {
       console.error(err);
@@ -61,8 +87,13 @@ const TaskPage = ({
     }
   };
 
+  if (pageLoading) return <div className="main-content"><p>Loading...</p></div>;
+  if (pageError) return <div className="main-content"><p>Error: {pageError}</p></div>;
+
   return (
-    <div>
+    <div className="main-content">
+      <h1>{taskName}</h1>
+
       <h2>Java Task</h2>
 
       <textarea
