@@ -8,16 +8,19 @@ import "../styles/navbar.css";
 const Navbar = () => {
   const [streak, setStreak] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (!user) {
         setDisplayName(null);
         setStreak(null);
+        setPhotoURL(null);
         return;
       }
 
       setDisplayName(user.displayName || user.email || null);
+      setPhotoURL(user.photoURL || null);
 
       const userDocRef = firebase.firestore().doc(`users/${user.uid}`);
       const unsubscribeDoc = userDocRef.onSnapshot(
@@ -50,7 +53,6 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="nav-left">
-       
         <div className="nav-links">
           <NavLink
             to="/"
@@ -60,7 +62,6 @@ const Navbar = () => {
           >
             Home
           </NavLink>
-         
           <NavLink
             to="/mypage"
             className={({ isActive }) =>
@@ -69,7 +70,6 @@ const Navbar = () => {
           >
             My Page
           </NavLink>
-        
           <NavLink
             to="/social"
             className={({ isActive }) =>
@@ -83,15 +83,30 @@ const Navbar = () => {
 
       <div className="nav-right">
         {displayName && (
-          <div
-            className="streak-badge"
-            title={`Current streak: ${streak ?? 0}`}
-            aria-hidden={streak === null}
-          >
-            <span className="streak-emoji">🔥</span>
-            <span className="streak-number">{streak ?? 0}</span>
-          </div>
+          <>
+            <div
+              className="streak-badge"
+              title={`Current streak: ${streak ?? 0}`}
+              aria-hidden={streak === null}
+            >
+              <span className="streak-emoji">🔥</span>
+              <span className="streak-number">{streak ?? 0}</span>
+            </div>
+
+            {/* User Icon */}
+            <div className="user-icon" title={displayName}>
+              {photoURL ? (
+                <img src={photoURL} alt="User avatar" />
+              ) : (
+                <div className="user-icon-fallback" aria-label="User icon">
+                  {/* You can replace with SVG or emoji */}
+                  👤
+                </div>
+              )}
+            </div>
+          </>
         )}
+
         <button onClick={handleLogout} className="logout-button">
           Logout
         </button>
@@ -101,7 +116,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-
-
-

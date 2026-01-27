@@ -40,6 +40,30 @@
   box-shadow: 0 4px 8px rgba(255,193,7,0.28);
   transform: scale(1.05);
 }
+/* User icon styles */
+.user-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ddd;
+  cursor: default;
+  flex-shrink: 0;
+}
+
+.user-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-icon-fallback {
+  font-size: 24px;
+  color: #666;
+}
 
 @media (max-width: 520px) {
   .navbar {
