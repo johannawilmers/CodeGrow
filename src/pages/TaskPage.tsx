@@ -9,15 +9,13 @@ const RUN_JAVA_URL =
 const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const [taskName, setTaskName] = useState<string>("");
+  const [taskDescription, setTaskDescription] = useState<string>("");
+  const [expectedOutput, setExpectedOutput] = useState<string>("");
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
   // Java compiler state
-  const [code, setCode] = useState<string>(`public class Main {
-  public static void main(String[] args) {
-    System.out.println("Hello, Codegrow!");
-  }
-}`);
+  const [code, setCode] = useState<string>("");
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +38,18 @@ const TaskPage = () => {
         }
 
         const taskInfo = taskSnap.data();
-        setTaskName(taskInfo.name || taskInfo.title || "Unnamed Task");
+        setTaskName(taskInfo.title || taskInfo.name || "Unnamed Task");
+        setTaskDescription(taskInfo.description || "");
+        setExpectedOutput(taskInfo.expectedOutput || "");
+        
+        // Unescape the starter code to convert \n and \" to actual characters
+        const unescapedCode = (taskInfo.starterCode || `public class Main {
+  public static void main(String[] args) {
+    System.out.println("Hello, Codegrow!");
+  }
+}`).replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
+        
+        setCode(unescapedCode);
 
       } catch (err) {
         console.error("Error fetching task:", err);
@@ -74,10 +83,10 @@ const TaskPage = () => {
       const data = await res.json();
       setOutput(data.output ?? "");
 
-      // VERY naive success check (still fine for now 👍)
-      if (data.output?.includes("Hello") && taskId) {
+      // Check if output matches expected output
+      if (expectedOutput && data.output?.includes(expectedOutput) && taskId) {
         // TODO: Add user authentication to save completion status
-        console.log("Code ran successfully!");
+        console.log("Task completed successfully!");
       }
     } catch (err) {
       console.error(err);
@@ -93,8 +102,12 @@ const TaskPage = () => {
   return (
     <div className="main-content">
       <h1>{taskName}</h1>
+      
+      {taskDescription && (
+        <p style={{ marginBottom: "20px", fontSize: "16px" }}>{taskDescription}</p>
+      )}
 
-      <h2>Java Task</h2>
+      <h2>Java Code</h2>
 
       <textarea
         value={code}
