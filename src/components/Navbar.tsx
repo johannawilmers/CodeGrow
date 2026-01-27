@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import { auth } from "../firebase";
-import "./Navbar.css";
+import "../styles/navbar.css";
 
 const Navbar = () => {
   const [streak, setStreak] = useState<number | null>(null);
