@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
+import "../styles/taskPage.css";
 
 const RUN_JAVA_URL =
   "https://us-central1-codegrow-5894a.cloudfunctions.net/runJava";
@@ -117,8 +118,15 @@ const TaskPage = () => {
       />
 
       <button onClick={runCode} disabled={loading}>
-        {loading ? "Running..." : "Run Code"}
-      </button>
+  {loading ? (
+    <>
+      Running
+      <span className="spinner" />
+    </>
+  ) : (
+    "Run Code"
+  )}
+</button>
 
       <h3>Output</h3>
 
