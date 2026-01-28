@@ -7,6 +7,7 @@ interface Topic {
   id: string;
   name: string;
   taskId: string;
+  order: number; 
 }
 
 const Topics = () => {
@@ -47,9 +48,11 @@ const Topics = () => {
                 id: topicSnap.id,
                 name: topicData.name || "Unnamed",
                 taskId: taskId,
+                order: typeof topicData.order === 'number' ? topicData.order : 999,
               });
             }
           }
+          resolvedTopics.sort((a, b) => a.order - b.order);
           setTopics(resolvedTopics);
         } else {
           setError("Theme not found");
