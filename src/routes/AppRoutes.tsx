@@ -6,6 +6,7 @@ import MyPage from "../pages/MyPage";
 import Social from "../pages/Social";
 import Topics from "../pages/Topics";
 import TaskPage from "../pages/TaskPage";
+import AdminPage from "../pages/AdminPage";
 
 const AppRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const AppRoutes = () => {
           <Route path="/social" element={<Social />} />
           <Route path="/theme/:id" element={<Topics />} />
           <Route path="/task" element={<TaskPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

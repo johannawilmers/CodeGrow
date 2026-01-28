@@ -6,6 +6,7 @@ import MyPage from "./pages/MyPage";
 import Social from "./pages/Social";
 import TaskPage from "./pages/TaskPage";
 import Login from "./components/Login";
+import AdminPage from "./pages/AdminPage";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/task/:taskId" element={<TaskPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/social" element={<Social />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </Login>
     </BrowserRouter>

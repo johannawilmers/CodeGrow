@@ -2,7 +2,6 @@ import axios from "axios";
 import * as functions from "firebase-functions/v2";
 import { defineJsonSecret } from "firebase-functions/params";
 
-
 // Load the entire config JSON secret
 const config = defineJsonSecret("FUNCTIONS_CONFIG_EXPORT");
 
