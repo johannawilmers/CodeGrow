@@ -77,67 +77,64 @@ const TaskPage = () => {
     fetchTask();
   }, [taskId]);
 
-  const runCode = async () => {
-    setLoading(true);
-    setError(null);
-    setOutput("");
-    setSuccess(false);
+const runCode = async () => {
+  setLoading(true);
+  setError(null);
+  setOutput("");
+  setSuccess(false);
 
-    try {
-      const res = await fetch(RUN_JAVA_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code }),
-      });
+  try {
+    const res = await fetch(RUN_JAVA_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code }),
+    });
 
-      if (!res.ok) {
-        throw new Error("Failed to run code");
+    if (!res.ok) {
+      throw new Error("Failed to run code");
+    }
+
+    const data = await res.json();
+    setOutput(data.output ?? "");
+
+    if (expectedOutput && data.output?.trim() === expectedOutput.trim() && taskId) {
+      const user = auth.currentUser;
+      if (!user) {
+        setError("You must be logged in to complete the task.");
+        return;
       }
 
-      const data = await res.json();
-      setOutput(data.output ?? "");
-
-      if (expectedOutput && data.output?.includes(expectedOutput) && taskId) {
-        const user = auth.currentUser;
-        if (!user) {
-          setError("You must be logged in to complete the task.");
-          return;
-        }
-
+      try {
         const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
         const userTaskSnap = await getDoc(userTaskDocRef);
 
-        if (!userTaskSnap.exists()) {
-          // Mark as completed in user subcollection
-          await setDoc(userTaskDocRef, {
-            completed: true,
-            completedAt: serverTimestamp(),
-          });
-          setSuccess(true);
-          setCompleted(true);
-        } else if (userTaskSnap.exists() && userTaskSnap.data()?.completed !== true) {
-          // Update completed status if previously incomplete
+        if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
           await setDoc(userTaskDocRef, {
             completed: true,
             completedAt: serverTimestamp(),
           }, { merge: true });
-          setSuccess(true);
-          setCompleted(true);
-        } else {
-          // Already completed
-          setSuccess(true);
-          setCompleted(true);
         }
+
+        setSuccess(true);
+        setCompleted(true);
+      } catch (firestoreError) {
+        console.error("Error marking task completed:", firestoreError);
+        setError("Failed to mark task as completed. Please try again.");
       }
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong while running the code.");
-    } finally {
-      setLoading(false);
+    } else {
+      setError("Output does not match expected output. Try again.");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong while running the code.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   if (pageLoading) return <div className="main-content"><p>Loading...</p></div>;
   if (pageError) return <div className="main-content"><p>Error: {pageError}</p></div>;
