@@ -15,14 +15,11 @@ const TaskPage = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
-  // Java compiler state
   const [code, setCode] = useState<string>("");
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
-
-  // Check if user completed this task before (optional: you can fetch this on load)
   const [completed, setCompleted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -33,7 +30,6 @@ const TaskPage = () => {
         setPageLoading(true);
         setPageError(null);
 
-        // Fetch the task from the tasks collection
         const taskDocRef = doc(db, "tasks", taskId);
         const taskSnap = await getDoc(taskDocRef);
 
@@ -46,13 +42,12 @@ const TaskPage = () => {
         setTaskName(taskInfo.title || taskInfo.name || "Unnamed Task");
         setTaskDescription(taskInfo.description || "");
         setExpectedOutput(taskInfo.expectedOutput || "");
-        
+
         const unescapedCode = (taskInfo.starterCode || `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, Codegrow!");
   }
-}`).replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
-        
+}`).replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\'/g, "'");
         setCode(unescapedCode);
 
         // Check if user has completed this task already
@@ -60,12 +55,10 @@ const TaskPage = () => {
         if (user) {
           const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
           const userTaskSnap = await getDoc(userTaskDocRef);
-          setCompleted(userTaskSnap.exists() && userTaskSnap.data()?.completed === true);
-          if (userTaskSnap.exists() && userTaskSnap.data()?.completed === true) {
-            setSuccess(true); // show success message if already completed
-          }
+          const isCompleted = userTaskSnap.exists() && userTaskSnap.data()?.completed === true;
+          setCompleted(isCompleted);
+          if (isCompleted) setSuccess(true);
         }
-
       } catch (err) {
         console.error("Error fetching task:", err);
         setPageError(err instanceof Error ? err.message : "Failed to fetch task");
@@ -77,64 +70,67 @@ const TaskPage = () => {
     fetchTask();
   }, [taskId]);
 
-const runCode = async () => {
-  setLoading(true);
-  setError(null);
-  setOutput("");
-  setSuccess(false);
+  const runCode = async () => {
+    setLoading(true);
+    setError(null);
+    setOutput("");
+    setSuccess(false);
 
-  try {
-    const res = await fetch(RUN_JAVA_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ code }),
-    });
+    try {
+      const res = await fetch(RUN_JAVA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
 
-    if (!res.ok) {
-      throw new Error("Failed to run code");
-    }
+      if (!res.ok) throw new Error("Failed to run code");
 
-    const data = await res.json();
-    setOutput(data.output ?? "");
+      const data = await res.json();
+      const trimmedOutput = (data.output ?? "").trim();
+      setOutput(trimmedOutput);
 
-    if (expectedOutput && data.output?.trim() === expectedOutput.trim() && taskId) {
-      const user = auth.currentUser;
-      if (!user) {
-        setError("You must be logged in to complete the task.");
-        return;
-      }
-
-      try {
-        const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
-        const userTaskSnap = await getDoc(userTaskDocRef);
-
-        if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
-          await setDoc(userTaskDocRef, {
-            completed: true,
-            completedAt: serverTimestamp(),
-          }, { merge: true });
+      if (expectedOutput.trim() === trimmedOutput && taskId) {
+        const user = auth.currentUser;
+        if (!user) {
+          setError("You must be logged in to complete the task.");
+          return;
         }
 
-        setSuccess(true);
-        setCompleted(true);
-      } catch (firestoreError) {
-        console.error("Error marking task completed:", firestoreError);
-        setError("Failed to mark task as completed. Please try again.");
+        try {
+          const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
+          const userTaskSnap = await getDoc(userTaskDocRef);
+
+          if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
+            await setDoc(
+              userTaskDocRef,
+              {
+                completed: true,
+                completedAt: serverTimestamp(),
+              },
+              { merge: true }
+            );
+          }
+
+          setSuccess(true);
+          setCompleted(true);
+
+          // Optionally update streak here:
+          // await updateStreak(user.uid);
+
+        } catch (firestoreError) {
+          console.error("Error marking task completed:", firestoreError);
+          setError("Failed to mark task as completed. Please try again.");
+        }
+      } else {
+        setError("Output does not match expected output. Try again.");
       }
-    } else {
-      setError("Output does not match expected output. Try again.");
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong while running the code.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong while running the code.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   if (pageLoading) return <div className="main-content"><p>Loading...</p></div>;
   if (pageError) return <div className="main-content"><p>Error: {pageError}</p></div>;
@@ -142,13 +138,12 @@ const runCode = async () => {
   return (
     <div className="main-content">
       <h1>{taskName}</h1>
-      
+
       {taskDescription && (
         <p style={{ marginBottom: "20px", fontSize: "16px" }}>{taskDescription}</p>
       )}
 
       <h2>Java Code</h2>
-
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
@@ -160,8 +155,7 @@ const runCode = async () => {
       <button onClick={runCode} disabled={loading || completed}>
         {loading ? (
           <>
-            Running
-            <span className="spinner" />
+            Running<span className="spinner" />
           </>
         ) : completed ? (
           "Task Completed"
