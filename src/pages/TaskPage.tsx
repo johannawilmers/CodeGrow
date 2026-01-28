@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { db, auth } from "../firebase";
 import "../styles/taskPage.css";
 
 const RUN_JAVA_URL =
@@ -20,6 +20,10 @@ const TaskPage = () => {
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+
+  // Check if user completed this task before (optional: you can fetch this on load)
+  const [completed, setCompleted] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -43,7 +47,6 @@ const TaskPage = () => {
         setTaskDescription(taskInfo.description || "");
         setExpectedOutput(taskInfo.expectedOutput || "");
         
-        // Unescape the starter code to convert \n and \" to actual characters
         const unescapedCode = (taskInfo.starterCode || `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, Codegrow!");
@@ -51,6 +54,17 @@ const TaskPage = () => {
 }`).replace(/\\n/g, '\n').replace(/\\"/g, '"').replace(/\\'/g, "'");
         
         setCode(unescapedCode);
+
+        // Check if user has completed this task already
+        const user = auth.currentUser;
+        if (user) {
+          const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
+          const userTaskSnap = await getDoc(userTaskDocRef);
+          setCompleted(userTaskSnap.exists() && userTaskSnap.data()?.completed === true);
+          if (userTaskSnap.exists() && userTaskSnap.data()?.completed === true) {
+            setSuccess(true); // show success message if already completed
+          }
+        }
 
       } catch (err) {
         console.error("Error fetching task:", err);
@@ -67,6 +81,7 @@ const TaskPage = () => {
     setLoading(true);
     setError(null);
     setOutput("");
+    setSuccess(false);
 
     try {
       const res = await fetch(RUN_JAVA_URL, {
@@ -84,10 +99,37 @@ const TaskPage = () => {
       const data = await res.json();
       setOutput(data.output ?? "");
 
-      // Check if output matches expected output
       if (expectedOutput && data.output?.includes(expectedOutput) && taskId) {
-        // TODO: Add user authentication to save completion status
-        console.log("Task completed successfully!");
+        const user = auth.currentUser;
+        if (!user) {
+          setError("You must be logged in to complete the task.");
+          return;
+        }
+
+        const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
+        const userTaskSnap = await getDoc(userTaskDocRef);
+
+        if (!userTaskSnap.exists()) {
+          // Mark as completed in user subcollection
+          await setDoc(userTaskDocRef, {
+            completed: true,
+            completedAt: serverTimestamp(),
+          });
+          setSuccess(true);
+          setCompleted(true);
+        } else if (userTaskSnap.exists() && userTaskSnap.data()?.completed !== true) {
+          // Update completed status if previously incomplete
+          await setDoc(userTaskDocRef, {
+            completed: true,
+            completedAt: serverTimestamp(),
+          }, { merge: true });
+          setSuccess(true);
+          setCompleted(true);
+        } else {
+          // Already completed
+          setSuccess(true);
+          setCompleted(true);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -115,22 +157,26 @@ const TaskPage = () => {
         onChange={(e) => setCode(e.target.value)}
         rows={12}
         style={{ width: "100%", fontFamily: "monospace" }}
+        disabled={completed}
       />
 
-      <button onClick={runCode} disabled={loading}>
-  {loading ? (
-    <>
-      Running
-      <span className="spinner" />
-    </>
-  ) : (
-    "Run Code"
-  )}
-</button>
+      <button onClick={runCode} disabled={loading || completed}>
+        {loading ? (
+          <>
+            Running
+            <span className="spinner" />
+          </>
+        ) : completed ? (
+          "Task Completed"
+        ) : (
+          "Run Code"
+        )}
+      </button>
 
       <h3>Output</h3>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
+      {success && <p style={{ color: "green" }}>🎉 Task completed successfully!</p>}
 
       <pre>{output}</pre>
     </div>
