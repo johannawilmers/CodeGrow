@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   doc,
@@ -7,6 +7,11 @@ import {
   runTransaction,
   serverTimestamp,
   Timestamp,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import "../styles/taskPage.css";
@@ -26,13 +31,13 @@ const updateUserProgress = async (uid: string) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    let conpletedTasksCount = 0;
+    let completedTasksCount = 0;
     let currentStreak = 0;
     let lastCompletedDate: Date | null = null;
 
     if (userSnap.exists()) {
       const data = userSnap.data();
-      conpletedTasksCount = data.conpletedTasksCount || 0;
+      completedTasksCount = data.completedTasksCount || 0;
       currentStreak = data.currentStreak || 0;
 
       if (data.lastCompletedDate) {
@@ -71,7 +76,7 @@ const updateUserProgress = async (uid: string) => {
       userRef,
       {
         lastCompletedDate: Timestamp.fromDate(today),
-        conpletedTasksCount: conpletedTasksCount + 1,
+        completedTasksCount: completedTasksCount + 1,
         currentStreak: newStreak,
       },
       { merge: true }
@@ -84,10 +89,14 @@ const updateUserProgress = async (uid: string) => {
    ========================= */
 const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
+  const navigate = useNavigate();
 
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
+
+  const [topicId, setTopicId] = useState<string | null>(null);
+  const [taskIdsInTopic, setTaskIdsInTopic] = useState<string[]>([]);
 
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
@@ -100,9 +109,15 @@ const TaskPage = () => {
   const [completed, setCompleted] = useState(false);
 
   /* =========================
-     Fetch task + completion
+     Reset states & Fetch task + completion on taskId change
      ========================= */
   useEffect(() => {
+    // Reset states when task changes so no lingering messages
+    setSuccess(false);
+    setCompleted(false);
+    setOutput("");
+    setError(null);
+
     const fetchTask = async () => {
       if (!taskId) return;
 
@@ -123,6 +138,8 @@ const TaskPage = () => {
         setTaskName(task.title || task.name || "Unnamed Task");
         setTaskDescription(task.description || "");
         setExpectedOutput(task.expectedOutput || "");
+
+        setTopicId(task.topicId || null);
 
         const starterCode = (task.starterCode || `public class Main {
   public static void main(String[] args) {
@@ -157,6 +174,60 @@ const TaskPage = () => {
 
     fetchTask();
   }, [taskId]);
+
+  /* =========================
+     Fetch all tasks in topic for navigation
+     ========================= */
+  useEffect(() => {
+    const fetchTasksInTopic = async () => {
+      if (!topicId) return;
+
+      try {
+        const q = query(
+          collection(db, "tasks"),
+          where("topicId", "==", topicId),
+          orderBy("createdAt", "asc")
+        );
+
+        const snap = await getDocs(q);
+        const ids = snap.docs.map((doc) => doc.id);
+        setTaskIdsInTopic(ids);
+      } catch (err) {
+        console.error("Failed to fetch tasks for navigation", err);
+      }
+    };
+
+    fetchTasksInTopic();
+  }, [topicId]);
+
+  /* =========================
+     Navigation helpers
+     ========================= */
+  const currentIndex = taskIdsInTopic.indexOf(taskId || "");
+
+  const goToPrevious = () => {
+    if (currentIndex <= 0) {
+      if (topicId) {
+        navigate(`/topic/${topicId}/tasks`);
+      } else {
+        navigate(`/`);
+      }
+    } else {
+      navigate(`/task/${taskIdsInTopic[currentIndex - 1]}`);
+    }
+  };
+
+  const goToNext = () => {
+    if (currentIndex === -1 || currentIndex >= taskIdsInTopic.length - 1) {
+      if (topicId) {
+        navigate(`/topic/${topicId}/tasks`);
+      } else {
+        navigate(`/`);
+      }
+    } else {
+      navigate(`/task/${taskIdsInTopic[currentIndex + 1]}`);
+    }
+  };
 
   /* =========================
      Run & validate code
@@ -205,6 +276,13 @@ const TaskPage = () => {
         );
 
         await updateUserProgress(user.uid);
+
+        setCompleted(true);
+        setSuccess(true);
+
+        // No automatic navigation here anymore
+
+        return; // prevent further clearing
       }
 
       setCompleted(true);
@@ -238,6 +316,15 @@ const TaskPage = () => {
 
   return (
     <div className="main-content">
+      {topicId && (
+  <button
+    onClick={() => navigate(`/topic/${topicId}/tasks`)}
+   
+  >
+    ← Back to Tasks
+  </button>
+)}
+
       <h1>{taskName}</h1>
 
       {taskDescription && (
@@ -265,6 +352,46 @@ const TaskPage = () => {
       )}
 
       <pre>{output}</pre>
+
+      {/* Navigation buttons and task position */}
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginTop: 24,
+          alignItems: "center",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          onClick={goToPrevious}
+          disabled={loading || pageLoading}
+          style={{
+            padding: "8px 16px",
+            cursor: "pointer",
+          }}
+          aria-label="Go to previous task"
+        >
+          ← Previous
+        </button>
+
+        <span style={{ fontWeight: "bold" }}>
+          Task {currentIndex + 1} of {taskIdsInTopic.length}
+        </span>
+
+        <button
+          onClick={goToNext}
+          disabled={loading || pageLoading}
+          style={{
+            padding: "8px 16px",
+            cursor: "pointer",
+          }}
+          aria-label="Go to next task"
+        >
+          Next →
+        </button>
+      </div>
     </div>
   );
 };

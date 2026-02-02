@@ -1,6 +1,6 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import "../styles/taskByTopic.css";
 
@@ -11,6 +11,7 @@ interface Task {
 }
 
 const TasksByTopicPage = () => {
+  const navigate = useNavigate();
   const { topicId } = useParams<{ topicId: string }>();
   const [topicName, setTopicName] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -45,9 +46,11 @@ const TasksByTopicPage = () => {
 
         // Query tasks where topicId matches
         const tasksQuery = query(
-          collection(db, "tasks"),
-          where("topicId", "==", topicId)
-        );
+        collection(db, "tasks"),
+        where("topicId", "==", topicId),
+        orderBy("createdAt", "asc") // or "desc"
+      );
+
         const tasksSnapshot = await getDocs(tasksQuery);
 
         const tasksList: Task[] = [];
@@ -107,6 +110,12 @@ const TasksByTopicPage = () => {
 
   return (
     <div className="main-content">
+      <button
+    onClick={() => navigate(`/`)}
+   
+  >
+    ← Back
+  </button>
       <h1>{topicName}</h1>
 
       {tasks.length === 0 ? (
