@@ -1,27 +1,107 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  runTransaction,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 import { db, auth } from "../firebase";
 import "../styles/taskPage.css";
 
 const RUN_JAVA_URL =
   "https://us-central1-codegrow-5894a.cloudfunctions.net/runJava";
 
+/* =========================
+   Helper: update user stats
+   ========================= */
+const updateUserProgress = async (uid: string) => {
+  const userRef = doc(db, "users", uid);
+
+  await runTransaction(db, async (transaction) => {
+    const userSnap = await transaction.get(userRef);
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    let conpletedTasksCount = 0;
+    let currentStreak = 0;
+    let lastCompletedDate: Date | null = null;
+
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      conpletedTasksCount = data.conpletedTasksCount || 0;
+      currentStreak = data.currentStreak || 0;
+
+      if (data.lastCompletedDate) {
+        lastCompletedDate = data.lastCompletedDate.toDate();
+      }
+    }
+
+    const lastDate = lastCompletedDate
+      ? new Date(
+          lastCompletedDate.getFullYear(),
+          lastCompletedDate.getMonth(),
+          lastCompletedDate.getDate()
+        )
+      : null;
+
+    const diffDays =
+      lastDate !== null
+        ? Math.floor(
+            (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+        : null;
+
+    let newStreak = currentStreak;
+
+    if (diffDays === null) {
+      newStreak = 1; // first ever task
+    } else if (diffDays === 0) {
+      newStreak = currentStreak; // same day
+    } else if (diffDays === 1) {
+      newStreak = currentStreak + 1; // consecutive day
+    } else {
+      newStreak = 1; // missed days
+    }
+
+    transaction.set(
+      userRef,
+      {
+        lastCompletedDate: Timestamp.fromDate(today),
+        conpletedTasksCount: conpletedTasksCount + 1,
+        currentStreak: newStreak,
+      },
+      { merge: true }
+    );
+  });
+};
+
+/* =========================
+   Component
+   ========================= */
 const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
-  const [taskName, setTaskName] = useState<string>("");
-  const [taskDescription, setTaskDescription] = useState<string>("");
-  const [expectedOutput, setExpectedOutput] = useState<string>("");
+
+  const [taskName, setTaskName] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [expectedOutput, setExpectedOutput] = useState("");
+
   const [pageLoading, setPageLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
-  const [code, setCode] = useState<string>("");
-  const [output, setOutput] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
-  const [completed, setCompleted] = useState<boolean>(false);
+  const [success, setSuccess] = useState(false);
+  const [completed, setCompleted] = useState(false);
 
+  /* =========================
+     Fetch task + completion
+     ========================= */
   useEffect(() => {
     const fetchTask = async () => {
       if (!taskId) return;
@@ -30,38 +110,46 @@ const TaskPage = () => {
         setPageLoading(true);
         setPageError(null);
 
-        const taskDocRef = doc(db, "tasks", taskId);
-        const taskSnap = await getDoc(taskDocRef);
+        const taskRef = doc(db, "tasks", taskId);
+        const taskSnap = await getDoc(taskRef);
 
         if (!taskSnap.exists()) {
           setPageError("Task not found");
           return;
         }
 
-        const taskInfo = taskSnap.data();
-        setTaskName(taskInfo.title || taskInfo.name || "Unnamed Task");
-        setTaskDescription(taskInfo.description || "");
-        setExpectedOutput(taskInfo.expectedOutput || "");
+        const task = taskSnap.data();
 
-        const unescapedCode = (taskInfo.starterCode || `public class Main {
+        setTaskName(task.title || task.name || "Unnamed Task");
+        setTaskDescription(task.description || "");
+        setExpectedOutput(task.expectedOutput || "");
+
+        const starterCode = (task.starterCode || `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, Codegrow!");
   }
-}`).replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\'/g, "'");
-        setCode(unescapedCode);
+}`)
+          .replace(/\\n/g, "\n")
+          .replace(/\\"/g, '"')
+          .replace(/\\'/g, "'");
 
-        // Check if user has completed this task already
+        setCode(starterCode);
+
         const user = auth.currentUser;
         if (user) {
-          const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
-          const userTaskSnap = await getDoc(userTaskDocRef);
-          const isCompleted = userTaskSnap.exists() && userTaskSnap.data()?.completed === true;
+          const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+          const userTaskSnap = await getDoc(userTaskRef);
+
+          const isCompleted =
+            userTaskSnap.exists() &&
+            userTaskSnap.data()?.completed === true;
+
           setCompleted(isCompleted);
           if (isCompleted) setSuccess(true);
         }
       } catch (err) {
-        console.error("Error fetching task:", err);
-        setPageError(err instanceof Error ? err.message : "Failed to fetch task");
+        console.error(err);
+        setPageError("Failed to load task");
       } finally {
         setPageLoading(false);
       }
@@ -70,6 +158,9 @@ const TaskPage = () => {
     fetchTask();
   }, [taskId]);
 
+  /* =========================
+     Run & validate code
+     ========================= */
   const runCode = async () => {
     setLoading(true);
     setError(null);
@@ -89,41 +180,35 @@ const TaskPage = () => {
       const trimmedOutput = (data.output ?? "").trim();
       setOutput(trimmedOutput);
 
-      if (expectedOutput.trim() === trimmedOutput && taskId) {
-        const user = auth.currentUser;
-        if (!user) {
-          setError("You must be logged in to complete the task.");
-          return;
-        }
-
-        try {
-          const userTaskDocRef = doc(db, "users", user.uid, "tasks", taskId);
-          const userTaskSnap = await getDoc(userTaskDocRef);
-
-          if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
-            await setDoc(
-              userTaskDocRef,
-              {
-                completed: true,
-                completedAt: serverTimestamp(),
-              },
-              { merge: true }
-            );
-          }
-
-          setSuccess(true);
-          setCompleted(true);
-
-          // Optionally update streak here:
-          // await updateStreak(user.uid);
-
-        } catch (firestoreError) {
-          console.error("Error marking task completed:", firestoreError);
-          setError("Failed to mark task as completed. Please try again.");
-        }
-      } else {
+      if (trimmedOutput !== expectedOutput.trim() || !taskId) {
         setError("Output does not match expected output. Try again.");
+        return;
       }
+
+      const user = auth.currentUser;
+      if (!user) {
+        setError("You must be logged in to complete the task.");
+        return;
+      }
+
+      const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+      const userTaskSnap = await getDoc(userTaskRef);
+
+      if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
+        await setDoc(
+          userTaskRef,
+          {
+            completed: true,
+            completedAt: serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        await updateUserProgress(user.uid);
+      }
+
+      setCompleted(true);
+      setSuccess(true);
     } catch (err) {
       console.error(err);
       setError("Something went wrong while running the code.");
@@ -132,15 +217,31 @@ const TaskPage = () => {
     }
   };
 
-  if (pageLoading) return <div className="main-content"><p>Loading...</p></div>;
-  if (pageError) return <div className="main-content"><p>Error: {pageError}</p></div>;
+  /* =========================
+     Render
+     ========================= */
+  if (pageLoading) {
+    return (
+      <div className="main-content">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (pageError) {
+    return (
+      <div className="main-content">
+        <p>Error: {pageError}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content">
       <h1>{taskName}</h1>
 
       {taskDescription && (
-        <p style={{ marginBottom: "20px", fontSize: "16px" }}>{taskDescription}</p>
+        <p style={{ marginBottom: 20, fontSize: 16 }}>{taskDescription}</p>
       )}
 
       <h2>Java Code</h2>
@@ -153,21 +254,15 @@ const TaskPage = () => {
       />
 
       <button onClick={runCode} disabled={loading || completed}>
-        {loading ? (
-          <>
-            Running<span className="spinner" />
-          </>
-        ) : completed ? (
-          "Task Completed"
-        ) : (
-          "Run Code"
-        )}
+        {loading ? "Running..." : completed ? "Task Completed" : "Run Code"}
       </button>
 
       <h3>Output</h3>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>🎉 Task completed successfully!</p>}
+      {success && (
+        <p style={{ color: "green" }}>🎉 Task completed successfully!</p>
+      )}
 
       <pre>{output}</pre>
     </div>
