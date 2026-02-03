@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { arrayUnion, updateDoc } from "firebase/firestore";
 import { 
   collection, addDoc, serverTimestamp, 
-  getDocs, query, where, doc, getDoc 
+  getDocs, query, where, doc, getDoc, updateDoc, arrayUnion 
 } from "firebase/firestore";
 import { db } from "../firebase";
 import ADMIN_PASSWORD from "../adminPassword"; 
@@ -23,7 +22,6 @@ const AdminPage = () => {
   const [authenticated, setAuthenticated] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  // ... your existing state here ...
   const [themes, setThemes] = useState<Theme[]>([]);
   const [selectedThemeId, setSelectedThemeId] = useState<string>("");
 
@@ -76,10 +74,9 @@ const AdminPage = () => {
     fetchThemes();
   }, [authenticated]);
 
-  // Fetch topics when selectedThemeId changes
+  // Fetch topics when selectedThemeId changes (using references)
   useEffect(() => {
-    if (!authenticated) return;
-    if (!selectedThemeId) {
+    if (!authenticated || !selectedThemeId) {
       setTopics([]);
       setSelectedTopicId("");
       return;
@@ -96,34 +93,28 @@ const AdminPage = () => {
           return;
         }
 
-        const topicIds: string[] = themeSnap.data().topics || [];
+        const topicRefs = themeSnap.data()?.topics || [];
 
-        if (topicIds.length === 0) {
+        if (topicRefs.length === 0) {
           setTopics([]);
           setSelectedTopicId("");
           return;
         }
 
-        const chunkedTopicIds = topicIds.length > 10 ? topicIds.slice(0, 10) : topicIds;
-
-        const topicsQuery = query(
-          collection(db, "topics"),
-          where("__name__", "in", chunkedTopicIds)
+        // Fetch each topic doc from its reference
+        const topicDocs = await Promise.all(
+          topicRefs.map((ref: any) => getDoc(ref))
         );
-        const topicsSnapshot = await getDocs(topicsQuery);
 
-        const topicsList: Topic[] = [];
-        topicsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          topicsList.push({ id: doc.id, name: data.name || "Unnamed Topic" });
-        });
+        const topicsList = topicDocs
+          .filter((docSnap) => docSnap.exists())
+          .map((docSnap) => ({
+            id: docSnap.id,
+            name: docSnap.data()?.name || "Unnamed Topic",
+          }));
 
         setTopics(topicsList);
-        if (topicsList.length > 0) {
-          setSelectedTopicId(topicsList[0].id);
-        } else {
-          setSelectedTopicId("");
-        }
+        setSelectedTopicId(topicsList[0]?.id || "");
       } catch (err) {
         console.error("Failed to fetch topics:", err);
         setTopics([]);
@@ -193,38 +184,37 @@ const AdminPage = () => {
 
   if (!authenticated) {
     return (
-      <div className="main-content" >
+      <div className="main-content admin-container">
         <h2>Admin Login</h2>
-        <form onSubmit={handlePasswordSubmit}>
+        <form onSubmit={handlePasswordSubmit} className="admin-form">
           <input
             type="password"
             placeholder="Enter admin password"
             value={enteredPassword}
             onChange={(e) => setEnteredPassword(e.target.value)}
-         
+            className="admin-input"
           />
-          <button type="submit" >
+          <button type="submit" className="admin-button">
             Login
           </button>
-          {passwordError && <p >{passwordError}</p>}
+          {passwordError && <p className="admin-error">{passwordError}</p>}
         </form>
       </div>
     );
   }
 
   return (
-    <div className="main-content" >
+    <div className="main-content admin-container">
       <h1>Create New Task</h1>
 
-      {/* Your existing form JSX here */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="admin-form">
         <label>
           Theme
           <select
             value={selectedThemeId}
             onChange={(e) => setSelectedThemeId(e.target.value)}
             disabled={loading}
-            
+            className="admin-select"
           >
             {themes.map((theme) => (
               <option key={theme.id} value={theme.id}>
@@ -240,7 +230,7 @@ const AdminPage = () => {
             value={selectedTopicId}
             onChange={(e) => setSelectedTopicId(e.target.value)}
             disabled={loading || !topics.length}
-            
+            className="admin-select"
           >
             {topics.length === 0 ? (
               <option>No topics available</option>
@@ -262,7 +252,7 @@ const AdminPage = () => {
             onChange={(e) => setTitle(e.target.value)}
             disabled={loading}
             required
-            
+            className="admin-input"
           />
         </label>
 
@@ -273,7 +263,7 @@ const AdminPage = () => {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             disabled={loading}
-           
+            className="admin-textarea"
           />
         </label>
 
@@ -284,7 +274,7 @@ const AdminPage = () => {
             onChange={(e) => setStarterCode(e.target.value)}
             rows={10}
             disabled={loading}
-            
+            className="admin-textarea"
           />
         </label>
 
@@ -295,17 +285,17 @@ const AdminPage = () => {
             value={expectedOutput}
             onChange={(e) => setExpectedOutput(e.target.value)}
             disabled={loading}
-            
+            className="admin-input"
           />
         </label>
 
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="admin-button">
           {loading ? "Creating..." : "Create Task"}
         </button>
       </form>
 
-      {successMessage && <p >{successMessage}</p>}
-      {errorMessage && <p>{errorMessage}</p>}
+      {successMessage && <p className="admin-success">{successMessage}</p>}
+      {errorMessage && <p className="admin-error">{errorMessage}</p>}
     </div>
   );
 };

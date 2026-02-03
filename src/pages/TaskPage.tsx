@@ -25,8 +25,8 @@ const RUN_JAVA_URL =
 const updateUserProgress = async (uid: string) => {
   const userRef = doc(db, "users", uid);
 
-  await runTransaction(db, async (transaction) => {
-    const userSnap = await transaction.get(userRef);
+  await runTransaction(db, async (tx) => {
+    const userSnap = await tx.get(userRef);
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -62,17 +62,12 @@ const updateUserProgress = async (uid: string) => {
 
     let newStreak = currentStreak;
 
-    if (diffDays === null) {
-      newStreak = 1; // first ever task
-    } else if (diffDays === 0) {
-      newStreak = currentStreak; // same day
-    } else if (diffDays === 1) {
-      newStreak = currentStreak + 1; // consecutive day
-    } else {
-      newStreak = 1; // missed days
-    }
+    if (diffDays === null) newStreak = 1;
+    else if (diffDays === 0) newStreak = currentStreak;
+    else if (diffDays === 1) newStreak = currentStreak + 1;
+    else newStreak = 1;
 
-    transaction.set(
+    tx.set(
       userRef,
       {
         lastCompletedDate: Timestamp.fromDate(today),
@@ -109,76 +104,48 @@ const TaskPage = () => {
   const [completed, setCompleted] = useState(false);
 
   /* =========================
-     Reset states & Fetch task + completion + saved code on taskId change
+     Fetch task + user state
      ========================= */
   useEffect(() => {
-    setSuccess(false);
-    setCompleted(false);
-    setOutput("");
-    setError(null);
-    setPageError(null);
-
     const fetchTask = async () => {
       if (!taskId) return;
 
       try {
         setPageLoading(true);
 
-        const taskRef = doc(db, "tasks", taskId);
-        const taskSnap = await getDoc(taskRef);
-
+        const taskSnap = await getDoc(doc(db, "tasks", taskId));
         if (!taskSnap.exists()) {
           setPageError("Task not found");
           return;
         }
 
         const task = taskSnap.data();
-
-        setTaskName(task.title || task.name || "Unnamed Task");
+        setTaskName(task.title || "Unnamed Task");
         setTaskDescription(task.description || "");
         setExpectedOutput(task.expectedOutput || "");
-
         setTopicId(task.topicId || null);
 
-        // Get starter code from task
-        const starterCode = (task.starterCode || `public class Main {
-  public static void main(String[] args) {
-    System.out.println("Hello, Codegrow!");
-  }
-}`)
-          .replace(/\\n/g, "\n")
-          .replace(/\\"/g, '"')
-          .replace(/\\'/g, "'");
+        const starterCode = (task.starterCode || "").replace(/\\n/g, "\n");
 
         const user = auth.currentUser;
         if (!user) {
-          // No user: just show starter code
           setCode(starterCode);
           return;
         }
 
-        // Fetch user task doc to check completion and saved code
-        const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-        const userTaskSnap = await getDoc(userTaskRef);
-
-        let savedCode = starterCode;
-        let isCompleted = false;
+        const userTaskSnap = await getDoc(
+          doc(db, "users", user.uid, "tasks", taskId)
+        );
 
         if (userTaskSnap.exists()) {
-          const userTaskData = userTaskSnap.data();
-          isCompleted = userTaskData.completed === true;
-
-          // If user saved code exists, load it, else starter code
-          if (typeof userTaskData.code === "string" && userTaskData.code.trim() !== "") {
-            savedCode = userTaskData.code;
-          }
+          const data = userTaskSnap.data();
+          setCode(data.code || starterCode);
+          setCompleted(data.completed === true);
+          setSuccess(data.completed === true);
+        } else {
+          setCode(starterCode);
         }
-
-        setCode(savedCode);
-        setCompleted(isCompleted);
-        if (isCompleted) setSuccess(true);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setPageError("Failed to load task");
       } finally {
         setPageLoading(false);
@@ -189,29 +156,79 @@ const TaskPage = () => {
   }, [taskId]);
 
   /* =========================
-     Fetch all tasks in topic for navigation
+     Fetch topic task order
      ========================= */
   useEffect(() => {
-    const fetchTasksInTopic = async () => {
-      if (!topicId) return;
+    if (!topicId) return;
 
-      try {
-        const q = query(
-          collection(db, "tasks"),
-          where("topicId", "==", topicId),
-          orderBy("createdAt", "asc")
-        );
+    const fetchTasks = async () => {
+      const q = query(
+        collection(db, "tasks"),
+        where("topicId", "==", topicId),
+        orderBy("createdAt", "asc")
+      );
 
-        const snap = await getDocs(q);
-        const ids = snap.docs.map((doc) => doc.id);
-        setTaskIdsInTopic(ids);
-      } catch (err) {
-        console.error("Failed to fetch tasks for navigation", err);
-      }
+      const snap = await getDocs(q);
+      setTaskIdsInTopic(snap.docs.map((d) => d.id));
     };
 
-    fetchTasksInTopic();
+    fetchTasks();
   }, [topicId]);
+
+  /* =========================
+     Run code
+     ========================= */
+  const runCode = async () => {
+    setLoading(true);
+    setError(null);
+    setOutput("");
+    setSuccess(false);
+
+    try {
+      const res = await fetch(RUN_JAVA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json();
+      const trimmedOutput = (data.output || "").trim();
+      setOutput(trimmedOutput);
+
+      if (!taskId) return;
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const isCorrect = trimmedOutput === expectedOutput.trim();
+      const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+      const snap = await getDoc(userTaskRef);
+      const wasCompleted = snap.exists() && snap.data()?.completed === true;
+
+      await setDoc(
+        userTaskRef,
+        {
+          code,
+          completed: isCorrect,
+          lastRunAt: serverTimestamp(),
+          ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
+        },
+        { merge: true }
+      );
+
+      if (isCorrect && !wasCompleted) {
+        await updateUserProgress(user.uid);
+        // Removed updateTopicProgress call here
+      }
+
+      setCompleted(isCorrect);
+      setSuccess(isCorrect);
+      if (!isCorrect) setError("Output does not match expected output.");
+    } catch {
+      setError("Something went wrong while running the code.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* =========================
      Navigation helpers
@@ -220,11 +237,8 @@ const TaskPage = () => {
 
   const goToPrevious = () => {
     if (currentIndex <= 0) {
-      if (topicId) {
-        navigate(`/topic/${topicId}/tasks`);
-      } else {
-        navigate(`/`);
-      }
+      if (topicId) navigate(`/topic/${topicId}/tasks`);
+      else navigate(`/`);
     } else {
       navigate(`/task/${taskIdsInTopic[currentIndex - 1]}`);
     }
@@ -232,84 +246,12 @@ const TaskPage = () => {
 
   const goToNext = () => {
     if (currentIndex === -1 || currentIndex >= taskIdsInTopic.length - 1) {
-      if (topicId) {
-        navigate(`/topic/${topicId}/tasks`);
-      } else {
-        navigate(`/`);
-      }
+      if (topicId) navigate(`/topic/${topicId}/tasks`);
+      else navigate(`/`);
     } else {
       navigate(`/task/${taskIdsInTopic[currentIndex + 1]}`);
     }
   };
-
-  /* =========================
-     Run & validate code and save user input
-     ========================= */
-  const runCode = async () => {
-  setLoading(true);
-  setError(null);
-  setOutput("");
-  setSuccess(false);
-
-  try {
-    const res = await fetch(RUN_JAVA_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-
-    if (!res.ok) throw new Error("Failed to run code");
-
-    const data = await res.json();
-    const trimmedOutput = (data.output ?? "").trim();
-    setOutput(trimmedOutput);
-
-    if (!taskId) return;
-
-    const user = auth.currentUser;
-    if (!user) {
-      setError("You must be logged in to run the task.");
-      return;
-    }
-
-    const isCorrect = trimmedOutput === expectedOutput.trim();
-
-    const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-    const userTaskSnap = await getDoc(userTaskRef);
-
-    const wasCompletedBefore =
-      userTaskSnap.exists() && userTaskSnap.data()?.completed === true;
-
-    // ✅ ALWAYS save code + completion state
-    await setDoc(
-      userTaskRef,
-      {
-        code: code,
-        completed: isCorrect,
-        lastRunAt: serverTimestamp(),
-        ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
-      },
-      { merge: true }
-    );
-
-    if (isCorrect) {
-      if (!wasCompletedBefore) {
-        await updateUserProgress(user.uid);
-      }
-
-      setCompleted(true);
-      setSuccess(true);
-    } else {
-      setCompleted(false);
-      setError("Output does not match expected output. Try again.");
-    }
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong while running the code.");
-  } finally {
-    setLoading(false);
-  }
-};
 
   if (pageLoading) {
     return (
@@ -330,58 +272,53 @@ const TaskPage = () => {
   return (
     <div className="main-content">
       {topicId && (
-        <button onClick={() => navigate(`/topic/${topicId}/tasks`)} >
+        <button onClick={() => navigate(`/topic/${topicId}/tasks`)}>
           ← Back to Tasks
         </button>
       )}
 
       <h1>{taskName}</h1>
 
-      {taskDescription && (
-        <p >{taskDescription}</p>
-      )}
+      {taskDescription && <p>{taskDescription}</p>}
 
       <h2>Java Code</h2>
       <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
         rows={12}
-      
         disabled={completed}
       />
 
       <button onClick={runCode} disabled={loading || completed}>
-        {loading ? "Running..." : completed ? "Task Completed" : "Run Code"}
+        {loading
+          ? "Running..."
+          : completed
+          ? "Task Completed"
+          : "Run Code"}
       </button>
 
       <h3>Output</h3>
-
-      {error && <p >{error}</p>}
-      {success && <p >🎉 Task completed successfully!</p>}
+      {error && <p>{error}</p>}
+      {success && <p>🎉 Task completed successfully!</p>}
 
       <pre>{output}</pre>
 
-      {/* Navigation buttons and task position */}
-      <div
-      
-      >
+      <div style={{ marginTop: "1rem" }}>
         <button
           onClick={goToPrevious}
           disabled={loading || pageLoading}
-        
           aria-label="Go to previous task"
         >
           ← Previous
         </button>
 
-        <span >
+        <span style={{ margin: "0 1rem" }}>
           Task {currentIndex + 1} of {taskIdsInTopic.length}
         </span>
 
         <button
           onClick={goToNext}
           disabled={loading || pageLoading}
-         
           aria-label="Go to next task"
         >
           Next →
