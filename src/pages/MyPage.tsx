@@ -40,7 +40,7 @@ const MyPage: React.FC = () => {
         )}
 
         <h1 style={{ margin: "0 0 8px 0" }}>{user.displayName ?? "Unnamed user"}</h1>
-
+        
         <div style={{ color: "var(--text-secondary)" }}>
           <p style={{ margin: "8px 0" }}>
             <strong>Email:</strong> {user.email ?? "—"}

@@ -4,6 +4,7 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import { auth } from "../firebase";
 import "../styles/navbar.css";
+import Streak from "./Streak";
 
 const Navbar = () => {
   const [streak, setStreak] = useState<number | null>(null);
@@ -84,14 +85,7 @@ const Navbar = () => {
       <div className="nav-right">
         {displayName && (
           <>
-            <div
-              className="streak-badge"
-              title={`Current streak: ${streak ?? 0}`}
-              aria-hidden={streak === null}
-            >
-              <span className="streak-emoji">🔥</span>
-              <span className="streak-number">{streak ?? 0}</span>
-            </div>
+            <Streak streak={streak} />
 
             {/* User Icon */}
             <div className="user-icon" title={displayName}>
