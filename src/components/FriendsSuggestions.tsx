@@ -54,19 +54,11 @@ const FriendsSuggestions: React.FC = () => {
             <li key={user.uid}>
               {user.photoURL && (
                 <img
-                  src={user.photoURL}
-                  alt={`${user.displayName}'s avatar`}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    marginRight: "10px",
-                    verticalAlign: "middle",
-                  }}
+                  
                 />
               )}
               <span>{user.displayName}</span>
-              <span style={{ marginLeft: "10px", color: "#FF5722" }}>
+              <span >
                 🔥 {user.currentStreak}
               </span>
             </li>

@@ -101,10 +101,10 @@ const CombinedThemesAndTopics = () => {
         <p>No themes found</p>
       ) : (
         themes.map((theme) => (
-          <div key={theme.id} style={{ marginBottom: "2rem" }}>
+          <div key={theme.id}>
             <h2>{theme.name}</h2>
             {theme.topics.length === 0 ? (
-              <p style={{ fontStyle: "italic" }}>No topics available</p>
+              <p >No topics available</p>
             ) : (
               <ul>
                 {theme.topics.map((topic) => (
