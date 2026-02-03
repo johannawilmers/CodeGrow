@@ -24,37 +24,28 @@ const MyPage: React.FC = () => {
 
   return (
     <div className="main-content">
-      <div className="profile-card" style={{ maxWidth: 720 }}>
+      <div >
         {user.photoURL && (
           <img
             src={user.photoURL}
             alt={user.displayName ?? "avatar"}
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: "50%",
-              objectFit: "cover",
-              marginBottom: 16,
-            }}
           />
         )}
 
-        <h1 style={{ margin: "0 0 8px 0" }}>{user.displayName ?? "Unnamed user"}</h1>
+        <h1>{user.displayName ?? "Unnamed user"}</h1>
         
-        <div style={{ color: "var(--text-secondary)" }}>
-          <p style={{ margin: "8px 0" }}>
+        <div>
+          <p>
             <strong>Email:</strong> {user.email ?? "—"}
           </p>
-          <p style={{ margin: "8px 0", wordBreak: "break-all" }}>
-            <strong>UID:</strong> {user.uid}
-          </p>
-          <p style={{ margin: "8px 0" }}>
+         
+          <p>
             <strong>Providers:</strong>{" "}
             {user.providerData && user.providerData.length > 0
               ? user.providerData.map((p) => p?.providerId).join(", ")
               : "—"}
           </p>
-          <p style={{ margin: "8px 0" }}>
+          <p>
             <strong>Email verified:</strong> {user.emailVerified ? "Yes" : "No"}
           </p>
         </div>

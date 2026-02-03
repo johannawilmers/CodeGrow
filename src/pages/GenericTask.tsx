@@ -69,7 +69,7 @@ const TaskPage = ({
         value={code}
         onChange={(e) => setCode(e.target.value)}
         rows={12}
-        style={{ width: "100%", fontFamily: "monospace" }}
+      
       />
 
       <button onClick={runCode} disabled={loading}>
@@ -78,7 +78,7 @@ const TaskPage = ({
 
       <h3>Output</h3>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p >{error}</p>}
 
       <pre>{output}</pre>
     </div>

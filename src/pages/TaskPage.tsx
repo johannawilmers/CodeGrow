@@ -330,7 +330,7 @@ const TaskPage = () => {
   return (
     <div className="main-content">
       {topicId && (
-        <button onClick={() => navigate(`/topic/${topicId}/tasks`)} style={{ marginBottom: 16 }}>
+        <button onClick={() => navigate(`/topic/${topicId}/tasks`)} >
           ← Back to Tasks
         </button>
       )}
@@ -338,7 +338,7 @@ const TaskPage = () => {
       <h1>{taskName}</h1>
 
       {taskDescription && (
-        <p style={{ marginBottom: 20, fontSize: 16 }}>{taskDescription}</p>
+        <p >{taskDescription}</p>
       )}
 
       <h2>Java Code</h2>
@@ -346,7 +346,7 @@ const TaskPage = () => {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         rows={12}
-        style={{ width: "100%", fontFamily: "monospace" }}
+      
         disabled={completed}
       />
 
@@ -356,45 +356,32 @@ const TaskPage = () => {
 
       <h3>Output</h3>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && <p style={{ color: "green" }}>🎉 Task completed successfully!</p>}
+      {error && <p >{error}</p>}
+      {success && <p >🎉 Task completed successfully!</p>}
 
       <pre>{output}</pre>
 
       {/* Navigation buttons and task position */}
       <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginTop: 24,
-          alignItems: "center",
-          justifyContent: "center",
-          flexWrap: "wrap",
-        }}
+      
       >
         <button
           onClick={goToPrevious}
           disabled={loading || pageLoading}
-          style={{
-            padding: "8px 16px",
-            cursor: "pointer",
-          }}
+        
           aria-label="Go to previous task"
         >
           ← Previous
         </button>
 
-        <span style={{ fontWeight: "bold" }}>
+        <span >
           Task {currentIndex + 1} of {taskIdsInTopic.length}
         </span>
 
         <button
           onClick={goToNext}
           disabled={loading || pageLoading}
-          style={{
-            padding: "8px 16px",
-            cursor: "pointer",
-          }}
+         
           aria-label="Go to next task"
         >
           Next →

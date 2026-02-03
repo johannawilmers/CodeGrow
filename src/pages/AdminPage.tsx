@@ -193,7 +193,7 @@ const AdminPage = () => {
 
   if (!authenticated) {
     return (
-      <div className="main-content" style={{ maxWidth: 400, margin: "50px auto" }}>
+      <div className="main-content" >
         <h2>Admin Login</h2>
         <form onSubmit={handlePasswordSubmit}>
           <input
@@ -201,19 +201,19 @@ const AdminPage = () => {
             placeholder="Enter admin password"
             value={enteredPassword}
             onChange={(e) => setEnteredPassword(e.target.value)}
-            style={{ width: "100%", padding: 8, fontSize: 16, marginBottom: 10 }}
+         
           />
-          <button type="submit" style={{ padding: "10px 20px", fontSize: 16 }}>
+          <button type="submit" >
             Login
           </button>
-          {passwordError && <p style={{ color: "red", marginTop: 10 }}>{passwordError}</p>}
+          {passwordError && <p >{passwordError}</p>}
         </form>
       </div>
     );
   }
 
   return (
-    <div className="main-content" style={{ maxWidth: 700, margin: "0 auto" }}>
+    <div className="main-content" >
       <h1>Create New Task</h1>
 
       {/* Your existing form JSX here */}
@@ -224,7 +224,7 @@ const AdminPage = () => {
             value={selectedThemeId}
             onChange={(e) => setSelectedThemeId(e.target.value)}
             disabled={loading}
-            style={{ width: "100%", padding: 8, marginTop: 4, marginBottom: 16 }}
+            
           >
             {themes.map((theme) => (
               <option key={theme.id} value={theme.id}>
@@ -240,7 +240,7 @@ const AdminPage = () => {
             value={selectedTopicId}
             onChange={(e) => setSelectedTopicId(e.target.value)}
             disabled={loading || !topics.length}
-            style={{ width: "100%", padding: 8, marginTop: 4, marginBottom: 16 }}
+            
           >
             {topics.length === 0 ? (
               <option>No topics available</option>
@@ -262,7 +262,7 @@ const AdminPage = () => {
             onChange={(e) => setTitle(e.target.value)}
             disabled={loading}
             required
-            style={{ width: "100%", padding: 8, marginTop: 4, marginBottom: 16 }}
+            
           />
         </label>
 
@@ -273,7 +273,7 @@ const AdminPage = () => {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             disabled={loading}
-            style={{ width: "100%", padding: 8, marginTop: 4, marginBottom: 16 }}
+           
           />
         </label>
 
@@ -284,7 +284,7 @@ const AdminPage = () => {
             onChange={(e) => setStarterCode(e.target.value)}
             rows={10}
             disabled={loading}
-            style={{ width: "100%", fontFamily: "monospace", padding: 8, marginTop: 4, marginBottom: 16 }}
+            
           />
         </label>
 
@@ -295,17 +295,17 @@ const AdminPage = () => {
             value={expectedOutput}
             onChange={(e) => setExpectedOutput(e.target.value)}
             disabled={loading}
-            style={{ width: "100%", padding: 8, marginTop: 4, marginBottom: 16 }}
+            
           />
         </label>
 
-        <button type="submit" disabled={loading} style={{ padding: "10px 20px", fontSize: 16 }}>
+        <button type="submit" disabled={loading}>
           {loading ? "Creating..." : "Create Task"}
         </button>
       </form>
 
-      {successMessage && <p style={{ color: "green", marginTop: 16 }}>{successMessage}</p>}
-      {errorMessage && <p style={{ color: "red", marginTop: 16 }}>{errorMessage}</p>}
+      {successMessage && <p >{successMessage}</p>}
+      {errorMessage && <p>{errorMessage}</p>}
     </div>
   );
 };
