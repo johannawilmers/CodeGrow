@@ -109,21 +109,20 @@ const TaskPage = () => {
   const [completed, setCompleted] = useState(false);
 
   /* =========================
-     Reset states & Fetch task + completion on taskId change
+     Reset states & Fetch task + completion + saved code on taskId change
      ========================= */
   useEffect(() => {
-    // Reset states when task changes so no lingering messages
     setSuccess(false);
     setCompleted(false);
     setOutput("");
     setError(null);
+    setPageError(null);
 
     const fetchTask = async () => {
       if (!taskId) return;
 
       try {
         setPageLoading(true);
-        setPageError(null);
 
         const taskRef = doc(db, "tasks", taskId);
         const taskSnap = await getDoc(taskRef);
@@ -141,6 +140,7 @@ const TaskPage = () => {
 
         setTopicId(task.topicId || null);
 
+        // Get starter code from task
         const starterCode = (task.starterCode || `public class Main {
   public static void main(String[] args) {
     System.out.println("Hello, Codegrow!");
@@ -150,20 +150,33 @@ const TaskPage = () => {
           .replace(/\\"/g, '"')
           .replace(/\\'/g, "'");
 
-        setCode(starterCode);
-
         const user = auth.currentUser;
-        if (user) {
-          const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-          const userTaskSnap = await getDoc(userTaskRef);
-
-          const isCompleted =
-            userTaskSnap.exists() &&
-            userTaskSnap.data()?.completed === true;
-
-          setCompleted(isCompleted);
-          if (isCompleted) setSuccess(true);
+        if (!user) {
+          // No user: just show starter code
+          setCode(starterCode);
+          return;
         }
+
+        // Fetch user task doc to check completion and saved code
+        const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+        const userTaskSnap = await getDoc(userTaskRef);
+
+        let savedCode = starterCode;
+        let isCompleted = false;
+
+        if (userTaskSnap.exists()) {
+          const userTaskData = userTaskSnap.data();
+          isCompleted = userTaskData.completed === true;
+
+          // If user saved code exists, load it, else starter code
+          if (typeof userTaskData.code === "string" && userTaskData.code.trim() !== "") {
+            savedCode = userTaskData.code;
+          }
+        }
+
+        setCode(savedCode);
+        setCompleted(isCompleted);
+        if (isCompleted) setSuccess(true);
       } catch (err) {
         console.error(err);
         setPageError("Failed to load task");
@@ -230,74 +243,74 @@ const TaskPage = () => {
   };
 
   /* =========================
-     Run & validate code
+     Run & validate code and save user input
      ========================= */
   const runCode = async () => {
-    setLoading(true);
-    setError(null);
-    setOutput("");
-    setSuccess(false);
+  setLoading(true);
+  setError(null);
+  setOutput("");
+  setSuccess(false);
 
-    try {
-      const res = await fetch(RUN_JAVA_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
+  try {
+    const res = await fetch(RUN_JAVA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
 
-      if (!res.ok) throw new Error("Failed to run code");
+    if (!res.ok) throw new Error("Failed to run code");
 
-      const data = await res.json();
-      const trimmedOutput = (data.output ?? "").trim();
-      setOutput(trimmedOutput);
+    const data = await res.json();
+    const trimmedOutput = (data.output ?? "").trim();
+    setOutput(trimmedOutput);
 
-      if (trimmedOutput !== expectedOutput.trim() || !taskId) {
-        setError("Output does not match expected output. Try again.");
-        return;
-      }
+    if (!taskId) return;
 
-      const user = auth.currentUser;
-      if (!user) {
-        setError("You must be logged in to complete the task.");
-        return;
-      }
+    const user = auth.currentUser;
+    if (!user) {
+      setError("You must be logged in to run the task.");
+      return;
+    }
 
-      const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-      const userTaskSnap = await getDoc(userTaskRef);
+    const isCorrect = trimmedOutput === expectedOutput.trim();
 
-      if (!userTaskSnap.exists() || userTaskSnap.data()?.completed !== true) {
-        await setDoc(
-          userTaskRef,
-          {
-            completed: true,
-            completedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
+    const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+    const userTaskSnap = await getDoc(userTaskRef);
 
+    const wasCompletedBefore =
+      userTaskSnap.exists() && userTaskSnap.data()?.completed === true;
+
+    // ✅ ALWAYS save code + completion state
+    await setDoc(
+      userTaskRef,
+      {
+        code: code,
+        completed: isCorrect,
+        lastRunAt: serverTimestamp(),
+        ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
+      },
+      { merge: true }
+    );
+
+    if (isCorrect) {
+      if (!wasCompletedBefore) {
         await updateUserProgress(user.uid);
-
-        setCompleted(true);
-        setSuccess(true);
-
-        // No automatic navigation here anymore
-
-        return; // prevent further clearing
       }
 
       setCompleted(true);
       setSuccess(true);
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong while running the code.");
-    } finally {
-      setLoading(false);
+    } else {
+      setCompleted(false);
+      setError("Output does not match expected output. Try again.");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong while running the code.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  /* =========================
-     Render
-     ========================= */
   if (pageLoading) {
     return (
       <div className="main-content">
@@ -317,13 +330,10 @@ const TaskPage = () => {
   return (
     <div className="main-content">
       {topicId && (
-  <button
-    onClick={() => navigate(`/topic/${topicId}/tasks`)}
-   
-  >
-    ← Back to Tasks
-  </button>
-)}
+        <button onClick={() => navigate(`/topic/${topicId}/tasks`)} style={{ marginBottom: 16 }}>
+          ← Back to Tasks
+        </button>
+      )}
 
       <h1>{taskName}</h1>
 
@@ -347,9 +357,7 @@ const TaskPage = () => {
       <h3>Output</h3>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
-      {success && (
-        <p style={{ color: "green" }}>🎉 Task completed successfully!</p>
-      )}
+      {success && <p style={{ color: "green" }}>🎉 Task completed successfully!</p>}
 
       <pre>{output}</pre>
 
