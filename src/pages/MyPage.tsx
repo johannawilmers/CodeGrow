@@ -50,6 +50,10 @@ const MyPage: React.FC = () => {
           </p>
         </div>
       </div>
+      <div>
+        <h1>Rewards</h1>
+        <p>Coming soon!</p>
+      </div>
     </div>
   );
 };
