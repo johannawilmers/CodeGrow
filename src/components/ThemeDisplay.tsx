@@ -114,38 +114,74 @@ const ThemesOverview = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="themes-collection">
-      <h1>Themes & Topics</h1>
+  <div className="themes-collection">
 
-      {themes.length === 0 && <p>No themes found</p>}
+    {themes.length === 0 && <p>No themes found</p>}
 
-      {themes.map((theme) => (
-        <div key={theme.id} className="theme-block">
-          <h2>{theme.name}</h2>
+    {/* First 4 themes block with heading "OOP" */}
+    {themes.length > 0 && (
+      <div className="theme-group">
+        <h1>Objekt-orientert programmering</h1>
+        {themes.slice(0, 4).map((theme) => (
+          <div key={theme.id} className="theme-block">
+            <h2>{theme.name}</h2>
+            {theme.topics.length === 0 ? (
+              <p className="empty-topics">No topics available</p>
+            ) : (
+              <ul className="topic-list">
+                {theme.topics.map((topic) => {
+                  const isCompleted = completedTopics.has(topic.id);
+                  return (
+                    <li
+                      key={topic.id}
+                      className={isCompleted ? "topic-completed" : "topic-pending"}
+                    >
+                      <Link to={`/topic/${topic.id}/tasks`}>
+                        {topic.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
 
-          {theme.topics.length === 0 ? (
-            <p className="empty-topics">No topics available</p>
-          ) : (
-            <ul className="topic-list">
-              {theme.topics.map((topic) => {
-                const isCompleted = completedTopics.has(topic.id);
-                return (
-                  <li
-                    key={topic.id}
-                    className={isCompleted ? "topic-completed" : "topic-pending"}
-                  >
-                    <Link to={`/topic/${topic.id}/tasks`}>
-                      {topic.name}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+    {/* Remaining themes block with heading "Java" */}
+    {themes.length > 4 && (
+      <div className="theme-group">
+        <h1>Java-teknikker</h1>
+        {themes.slice(4).map((theme) => (
+          <div key={theme.id} className="theme-block">
+            <h2>{theme.name}</h2>
+            {theme.topics.length === 0 ? (
+              <p className="empty-topics">No topics available</p>
+            ) : (
+              <ul className="topic-list">
+                {theme.topics.map((topic) => {
+                  const isCompleted = completedTopics.has(topic.id);
+                  return (
+                    <li
+                      key={topic.id}
+                      className={isCompleted ? "topic-completed" : "topic-pending"}
+                    >
+                      <Link to={`/topic/${topic.id}/tasks`}>
+                        {topic.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
 };
 
 export default ThemesOverview;
