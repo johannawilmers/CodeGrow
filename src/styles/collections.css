@@ -39,13 +39,6 @@
   display: none; /* Chrome, Safari */
 }
 
-
-/* Hover effect: slightly darker green */
-.themes-collection li:hover,
-.topics-collection li:hover {
-  background-color: #2E7D32;
-}
-
 /* Add connecting "road" lines between tasks */
 .themes-collection li:not(:last-child)::after,
 .topics-collection li:not(:last-child)::after {
@@ -75,22 +68,14 @@
   transform: translateX(5px);
 }
 
-/* Optional description text below */
-.themes-collection p,
-.topics-collection p {
-  color: #666;
-  font-style: italic;
-  margin-top: 0.5rem;
-  white-space: normal;
-  max-width: 300px;
-}
+
 .topic-completed {
   background-color: #4caf50; /* Green */
   color: white;
 }
 
 .topic-pending {
-  background-color: #9e9e9e; /* Gray */
+ background-color: #96bd97;
   color: white;
 }
 
