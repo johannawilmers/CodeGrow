@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, doc, getDoc, DocumentReference } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { Link } from "react-router-dom";
 
 interface Topic {
   id: string;
   name: string;
-  taskId: string;
   order: number;
+  theme: string;
 }
 
 interface Theme {
@@ -17,108 +17,112 @@ interface Theme {
   topics: Topic[];
 }
 
-const CombinedThemesAndTopics = () => {
+const ThemesOverview = () => {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchThemesAndTopics = async () => {
+    const fetchData = async () => {
       try {
-        const themesSnapshot = await getDocs(collection(db, "themes"));
-        const themesData: Theme[] = [];
+        setLoading(true);
 
-        for (const themeDoc of themesSnapshot.docs) {
-          const themeData = themeDoc.data();
-          const themeId = themeDoc.id;
-          const themeName = themeData.name || "Unnamed Theme";
-          const themeOrder = themeData.order || 999;
-          const topicRefs: DocumentReference[] = themeData.topics || [];
+        // 🚀 Fetch both collections in parallel
+        const [themesSnap, topicsSnap] = await Promise.all([
+          getDocs(collection(db, "themes")),
+          getDocs(collection(db, "topics")),
+        ]);
 
-          const resolvedTopics: Topic[] = [];
-          for (const topicRef of topicRefs) {
-            let topicSnap;
-            if (typeof topicRef === "string") {
-              topicSnap = await getDoc(doc(db, "topics", topicRef));
-            } else {
-              topicSnap = await getDoc(topicRef);
-            }
+        // Parse themes
+        const themesMap: Record<string, Theme> = {};
+        themesSnap.forEach((doc) => {
+          const data = doc.data();
+          themesMap[doc.id] = {
+            id: doc.id,
+            name: data.name ?? "Unnamed theme",
+            order: typeof data.order === "number" ? data.order : 999,
+            topics: [],
+          };
+        });
 
-            if (topicSnap.exists()) {
-              const topicData = topicSnap.data();
+        // Parse topics & attach to themes
+        topicsSnap.forEach((doc) => {
+  const data = doc.data();
 
-              let taskId = "";
-              if (topicData.task) {
-                if (typeof topicData.task === "string" && topicData.task.startsWith("/tasks/")) {
-                  taskId = topicData.task.split("/")[2];
-                } else if (typeof topicData.task === "object" && "id" in topicData.task) {
-                  taskId = topicData.task.id;
-                }
-              } else if (topicData.taskId) {
-                taskId = topicData.taskId;
-              } else {
-                taskId = topicSnap.id;
-              }
+  let theme: string | undefined;
+  if (typeof data.theme === "string") {
+    theme = data.theme;
+  } else if (data.theme?.id) {
+    theme = data.theme.id;
+  } else {
+    theme = undefined;
+  }
 
-              resolvedTopics.push({
-                id: topicSnap.id,
-                name: topicData.name || "Unnamed Topic",
-                taskId,
-                order: typeof topicData.order === "number" ? topicData.order : 999,
-              });
-            }
-          }
+  console.log("Topic:", doc.id, "theme:", theme);
+  console.log("ThemesMap keys:", Object.keys(themesMap));
 
-          resolvedTopics.sort((a, b) => a.order - b.order);
+  if (!theme || !themesMap[theme]) return;
 
-          themesData.push({
-            id: themeId,
-            name: themeName,
-            order: themeOrder,
-            topics: resolvedTopics,
-          });
-        }
+  themesMap[theme].topics.push({
+    id: doc.id,
+    name: data.name ?? "Unnamed topic",
+    order: typeof data.order === "number" ? data.order : 999,
+    theme,
+  });
+});
 
-        themesData.sort((a, b) => a.order - b.order);
-        setThemes(themesData);
+
+        // Sort topics inside each theme
+        Object.values(themesMap).forEach((theme) => {
+          theme.topics.sort((a, b) => a.order - b.order);
+        });
+
+        // Sort themes
+        const sortedThemes = Object.values(themesMap).sort(
+          (a, b) => a.order - b.order
+        );
+
+        setThemes(sortedThemes);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch data");
+        setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchThemesAndTopics();
+    fetchData();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading themes…</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="themes-collection">
       <h1>Themes & Topics</h1>
-      {themes.length === 0 ? (
-        <p>No themes found</p>
-      ) : (
-        themes.map((theme) => (
-          <div key={theme.id}>
-            <h2>{theme.name}</h2>
-            {theme.topics.length === 0 ? (
-              <p >No topics available</p>
-            ) : (
-              <ul>
-                {theme.topics.map((topic) => (
-                  <li key={topic.id}>
-                    <Link to={`/topic/${topic.id}/tasks`}>{topic.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))
-      )}
+
+      {themes.length === 0 && <p>No themes found</p>}
+
+      {themes.map((theme) => (
+        <div key={theme.id} className="theme-block">
+          <h2>{theme.name}</h2>
+
+          {theme.topics.length === 0 ? (
+            <p className="empty-topics">No topics available</p>
+          ) : (
+            <ul className="topic-list">
+              {theme.topics.map((topic) => (
+                <li key={topic.id}>
+                  <Link to={`/topic/${topic.id}/tasks`}>
+                    {topic.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
 
-export default CombinedThemesAndTopics;
+export default ThemesOverview;
