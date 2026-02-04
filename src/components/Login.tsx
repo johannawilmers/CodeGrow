@@ -10,6 +10,7 @@ interface Props {
 }
 
 const Login: React.FC<Props> = ({ children }) => {
+  
   const [user, setUser] = useState<firebase.User | null>(auth.currentUser);
   const [loading, setLoading] = useState(true);
 

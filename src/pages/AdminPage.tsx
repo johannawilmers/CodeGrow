@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { 
   collection, addDoc, serverTimestamp, 
-  getDocs, query, where, doc, getDoc, updateDoc, arrayUnion 
+  getDocs, doc, getDoc, updateDoc, arrayUnion 
 } from "firebase/firestore";
 import { db } from "../firebase";
 import ADMIN_PASSWORD from "../adminPassword"; 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../firebase"; // Make sure to import auth to get current user
 import { Link } from "react-router-dom";
 
 interface Topic {
@@ -19,6 +19,7 @@ interface Theme {
 
 const ThemesOverview = () => {
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [completedTopics, setCompletedTopics] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,13 +28,13 @@ const ThemesOverview = () => {
       try {
         setLoading(true);
 
-        // 🚀 Fetch both collections in parallel
+        // Fetch themes and topics
         const [themesSnap, topicsSnap] = await Promise.all([
           getDocs(collection(db, "themes")),
           getDocs(collection(db, "topics")),
         ]);
 
-        // Parse themes
+        // Build themes map
         const themesMap: Record<string, Theme> = {};
         themesSnap.forEach((doc) => {
           const data = doc.data();
@@ -45,32 +46,27 @@ const ThemesOverview = () => {
           };
         });
 
-        // Parse topics & attach to themes
+        // Attach topics to themes
         topicsSnap.forEach((doc) => {
-  const data = doc.data();
+          const data = doc.data();
+          let theme: string | undefined;
+          if (typeof data.theme === "string") {
+            theme = data.theme;
+          } else if (data.theme?.id) {
+            theme = data.theme.id;
+          } else {
+            theme = undefined;
+          }
 
-  let theme: string | undefined;
-  if (typeof data.theme === "string") {
-    theme = data.theme;
-  } else if (data.theme?.id) {
-    theme = data.theme.id;
-  } else {
-    theme = undefined;
-  }
+          if (!theme || !themesMap[theme]) return;
 
-  console.log("Topic:", doc.id, "theme:", theme);
-  console.log("ThemesMap keys:", Object.keys(themesMap));
-
-  if (!theme || !themesMap[theme]) return;
-
-  themesMap[theme].topics.push({
-    id: doc.id,
-    name: data.name ?? "Unnamed topic",
-    order: typeof data.order === "number" ? data.order : 999,
-    theme,
-  });
-});
-
+          themesMap[theme].topics.push({
+            id: doc.id,
+            name: data.name ?? "Unnamed topic",
+            order: typeof data.order === "number" ? data.order : 999,
+            theme,
+          });
+        });
 
         // Sort topics inside each theme
         Object.values(themesMap).forEach((theme) => {
@@ -83,6 +79,27 @@ const ThemesOverview = () => {
         );
 
         setThemes(sortedThemes);
+
+        // Fetch completed topics for current user
+        const user = auth.currentUser;
+        if (!user) {
+          setCompletedTopics(new Set());
+          return;
+        }
+
+        const userTopicsSnap = await getDocs(
+          collection(db, "users", user.uid, "topics")
+        );
+
+        const completedSet = new Set<string>();
+        userTopicsSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.completed === true) {
+            completedSet.add(doc.id);
+          }
+        });
+
+        setCompletedTopics(completedSet);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
       } finally {
@@ -110,13 +127,19 @@ const ThemesOverview = () => {
             <p className="empty-topics">No topics available</p>
           ) : (
             <ul className="topic-list">
-              {theme.topics.map((topic) => (
-                <li key={topic.id}>
-                  <Link to={`/topic/${topic.id}/tasks`}>
-                    {topic.name}
-                  </Link>
-                </li>
-              ))}
+              {theme.topics.map((topic) => {
+                const isCompleted = completedTopics.has(topic.id);
+                return (
+                  <li
+                    key={topic.id}
+                    className={isCompleted ? "topic-completed" : "topic-pending"}
+                  >
+                    <Link to={`/topic/${topic.id}/tasks`}>
+                      {topic.name}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

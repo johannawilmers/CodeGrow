@@ -175,60 +175,86 @@ const TaskPage = () => {
     fetchTasks();
   }, [topicId]);
 
-  /* =========================
-     Run code
-     ========================= */
-  const runCode = async () => {
-    setLoading(true);
-    setError(null);
-    setOutput("");
-    setSuccess(false);
+const markTopicCompletedSimple = async (userId: string, topicId: string) => {
+  if (!topicId) return;
+  const userTopicRef = doc(db, "users", userId, "topics", topicId);
+  try {
+    await setDoc(
+      userTopicRef,
+      {
+        completed: true,
+        completedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    console.log("Topic marked completed:", topicId);
+  } catch (error) {
+    console.error("Failed to mark topic completed:", error);
+  }
+};
 
-    try {
-      const res = await fetch(RUN_JAVA_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
-      });
+const runCode = async () => {
+  setLoading(true);
+  setError(null);
+  setOutput("");
+  setSuccess(false);
 
-      const data = await res.json();
-      const trimmedOutput = (data.output || "").trim();
-      setOutput(trimmedOutput);
+  try {
+    const res = await fetch(RUN_JAVA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
 
-      if (!taskId) return;
-      const user = auth.currentUser;
-      if (!user) return;
+    const data = await res.json();
+    const trimmedOutput = (data.output || "").trim();
+    setOutput(trimmedOutput);
 
-      const isCorrect = trimmedOutput === expectedOutput.trim();
-      const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-      const snap = await getDoc(userTaskRef);
-      const wasCompleted = snap.exists() && snap.data()?.completed === true;
-
-      await setDoc(
-        userTaskRef,
-        {
-          code,
-          completed: isCorrect,
-          lastRunAt: serverTimestamp(),
-          ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
-        },
-        { merge: true }
-      );
-
-      if (isCorrect && !wasCompleted) {
-        await updateUserProgress(user.uid);
-        // Removed updateTopicProgress call here
-      }
-
-      setCompleted(isCorrect);
-      setSuccess(isCorrect);
-      if (!isCorrect) setError("Output does not match expected output.");
-    } catch {
-      setError("Something went wrong while running the code.");
-    } finally {
+    if (!taskId) {
       setLoading(false);
+      return;
     }
-  };
+    const user = auth.currentUser;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const isCorrect = trimmedOutput === expectedOutput.trim();
+    const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+    const snap = await getDoc(userTaskRef);
+    const wasCompleted = snap.exists() && snap.data()?.completed === true;
+
+    await setDoc(
+      userTaskRef,
+      {
+        code,
+        completed: isCorrect,
+        lastRunAt: serverTimestamp(),
+        ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
+      },
+      { merge: true }
+    );
+
+    if (isCorrect && !wasCompleted) {
+      await updateUserProgress(user.uid);
+      if (topicId) {
+        console.log("Marking topic completed for topicId:", topicId);
+        await markTopicCompletedSimple(user.uid, topicId);
+      }
+    }
+
+    setCompleted(isCorrect);
+    setSuccess(isCorrect);
+    if (!isCorrect) setError("Output does not match expected output.");
+  } catch (err) {
+    console.error("Error running code:", err);
+    setError("Something went wrong while running the code.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   /* =========================
      Navigation helpers
