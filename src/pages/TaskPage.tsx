@@ -296,7 +296,7 @@ const runCode = async () => {
   }
 
   return (
-    <div className="main-content">
+    <div className="main-content" id="taskContent">
       {topicId && (
         <button onClick={() => navigate(`/topic/${topicId}/tasks`)}>
           ← Back to Tasks
@@ -324,10 +324,11 @@ const runCode = async () => {
       </button>
 
       <h3>Output</h3>
+      <pre>{output}</pre>
       {error && <p>{error}</p>}
       {success && <p>🎉 Task completed successfully!</p>}
 
-      <pre>{output}</pre>
+      
 
       <div style={{ marginTop: "1rem" }}>
         <button

@@ -1,15 +1,5 @@
-/* src/styles/firebaseui-custom.css */
+src/styles/firebaseui-custom.css
 
-/* --- Global / Page Level Centering --- */
-/* Ensure html, body, and root element take full height for vertical centering */
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  box-sizing: border-box; /* Include padding in height calculation */
-}
-
-/* Overall container for the entire sign-in page content */
 .signin-page-container {
   display: flex;
   flex-direction: column; /* Stack items vertically (h2 then FirebaseUI form) */

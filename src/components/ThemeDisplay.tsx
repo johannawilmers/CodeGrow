@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebase"; // Make sure to import auth to get current user
 import { Link } from "react-router-dom";
 

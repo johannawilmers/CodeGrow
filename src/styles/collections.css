@@ -1,6 +1,5 @@
 /* Container styling */
 .themes-collection,
-.topics-collection,
 .friends-suggestions {
   background-color: white;
   padding: 1.5rem;
@@ -11,7 +10,6 @@
 
 /* Headings */
 .themes-collection h2,
-.topics-collection h2,
 .friends-suggestions h2 {
   color: #2E7D32;
   font-size: 1.5rem;
@@ -20,7 +18,6 @@
 
 /* Remove default ul styles */
 .themes-collection ul,
-.topics-collection ul,
 .friends-suggestions ul {
   list-style: none;
   padding: 0;
@@ -34,49 +31,40 @@
   scrollbar-width: none; /* Firefox */
 }
 
-.themes-collection ul::-webkit-scrollbar,
-.topics-collection ul::-webkit-scrollbar {
+.themes-collection ul::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
 
 /* Add connecting "road" lines between tasks */
-.themes-collection li:not(:last-child)::after,
-.topics-collection li:not(:last-child)::after {
+.themes-collection li:not(:last-child)::after {
   content: "";
   position: absolute;
   top: 50%;
   right: -1rem;
-  width: 2rem;
+  width: 1rem;
   height: 4px;
-  background-color: #4CAF50;
+  background-color: var(--primary-color);
   transform: translateY(-50%);
   z-index: 0;
 }
 
 /* Make the link fill the whole list item */
-.themes-collection a,
-.topics-collection a {
+.themes-collection a {
   color: white;
   text-decoration: none;
   display: block;
   width: 100%;
 }
 
-/* On hover, slightly shift the text */
-.themes-collection a:hover,
-.topics-collection a:hover {
-  transform: translateX(5px);
-}
+
 
 
 .topic-completed {
-  background-color: #4caf50; /* Green */
-  color: white;
+  background-color: var(--secondary-color); /* Green */
 }
 
 .topic-pending {
- background-color: #96bd97;
-  color: white;
+ background-color: var(--primary-color);
 }
 
 /* Keep the rest of your styling such as padding, border-radius, etc. */
@@ -90,15 +78,15 @@
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.3s ease;
+ 
 }
 
 .topic-completed:hover {
-  background-color: #2e7d32; /* Darker green */
+  background-color: var(--secondary-color); /* Darker green */
 }
 
 .topic-pending:hover {
-  background-color: #757575; /* Darker gray */
+  background-color: var(--secondary-color); /* Darker gray */
 }
 
 

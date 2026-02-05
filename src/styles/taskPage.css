@@ -12,8 +12,100 @@
   margin-left: 10px;
 }
 
+
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
+
+/* =========================
+   PAGE LAYOUT
+========================= */
+
+#taskContent {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 7.5rem 1.5rem 3rem;
+
+  gap: 1.2rem;
+}
+
+/* =========================
+   CODE EDITOR
+========================= */
+
+textarea {
+  width: 100%;
+  min-height: 260px;
+
+  padding: 1rem;
+  border-radius: 12px;
+
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1rem;
+  line-height: 1.5;
+
+  background: #0f172a;
+  color: #e5e7eb;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  resize: vertical;
+
+  outline: none;
+}
+
+textarea:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* =========================
+   OUTPUT
+========================= */
+
+pre {
+  background: #020617;
+  color: #d1fae5;
+
+  padding: 1rem;
+  border-radius: 12px;
+
+  font-size: 0.95rem;
+  overflow-x: auto;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================
+   FEEDBACK STATES
+========================= */
+
+.main-content p.error {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.main-content p.success {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+
+
+.main-content button:hover:not(:disabled) {
+  background: var(--secondary-color);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.22);
+}
+
+.main-content button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+
+
