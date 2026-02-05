@@ -26,3 +26,4 @@ dist-ssr
 
 
 src/adminPassword.ts
+src/pages/AdminPage.tsx
