@@ -58,32 +58,49 @@
 
 /* Task link */
 #taskByTopic li a {
-  
+  display: block;
+  width: 100%;
+  height: 100%;
+
   text-decoration: none;
   font-weight: bold;
   font-size: 1.05rem;
+
+  /* make the whole card clickable */
+  padding: 1rem 1.2rem;
+  margin: -1rem -1.2rem;
+
+  color: inherit;
 }
+
 
 /* =========================
    COMPLETED TASK
 ========================= */
 
 #taskByTopic .completed-task {
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  position: relative; /* needed for absolute positioning of ::after */
+  background-color: #dbf4e4;
 }
+
+#taskByTopic .completed-task::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  right: 1.2rem; /* same as padding */
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: #22c55e;
+  pointer-events: none; /* so it doesn't interfere with clicks */
+
+}
+
 
 #taskByTopic .completed-task a {
   color: var(--primary-color);
 }
 
-/* Optional checkmark */
-#taskByTopic .completed-task::after {
-  content: "✓";
-  float: right;
-  font-weight: bold;
-  color: #22c55e;
-}
+
 
 
 
