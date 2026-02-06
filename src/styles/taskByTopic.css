@@ -90,14 +90,14 @@
   right: 1.2rem; /* same as padding */
   transform: translateY(-50%);
   font-weight: bold;
-  color: #22c55e;
+  color: var(--success-dark);
   pointer-events: none; /* so it doesn't interfere with clicks */
 
 }
 
 
 #taskByTopic .completed-task a {
-  color: var(--primary-color);
+  color: var(--success-dark);
 }
 
 
