@@ -21,7 +21,7 @@ const RUN_JAVA_URL =
 
 /* =========================
    Helper: update user stats
-   ========================= */
+========================= */
 const updateUserProgress = async (uid: string) => {
   const userRef = doc(db, "users", uid);
 
@@ -56,7 +56,8 @@ const updateUserProgress = async (uid: string) => {
     const diffDays =
       lastDate !== null
         ? Math.floor(
-            (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+            (today.getTime() - lastDate.getTime()) /
+              (1000 * 60 * 60 * 24)
           )
         : null;
 
@@ -80,8 +81,58 @@ const updateUserProgress = async (uid: string) => {
 };
 
 /* =========================
+   Helper: mark topic completed
+   ONLY if all tasks are done
+========================= */
+const markTopicCompletedIfAllTasksDone = async (
+  userId: string,
+  topicId: string
+) => {
+  // All tasks in topic
+  const tasksQuery = query(
+    collection(db, "tasks"),
+    where("topicId", "==", topicId)
+  );
+
+  const tasksSnap = await getDocs(tasksQuery);
+  const taskIds = tasksSnap.docs.map((d) => d.id);
+
+  if (taskIds.length === 0) return;
+
+  // User completed tasks
+  const userTasksSnap = await getDocs(
+    collection(db, "users", userId, "tasks")
+  );
+
+  const completedTaskIds = new Set<string>();
+  userTasksSnap.forEach((doc) => {
+    if (doc.data().completed === true) {
+      completedTaskIds.add(doc.id);
+    }
+  });
+
+  // Check if ALL tasks are completed
+  const allCompleted = taskIds.every((id) =>
+    completedTaskIds.has(id)
+  );
+
+  if (!allCompleted) return;
+
+  // Mark topic completed
+  const userTopicRef = doc(db, "users", userId, "topics", topicId);
+  await setDoc(
+    userTopicRef,
+    {
+      completed: true,
+      completedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+};
+
+/* =========================
    Component
-   ========================= */
+========================= */
 const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
@@ -104,8 +155,8 @@ const TaskPage = () => {
   const [completed, setCompleted] = useState(false);
 
   /* =========================
-     Fetch task + user state
-     ========================= */
+     Fetch task
+  ========================= */
   useEffect(() => {
     const fetchTask = async () => {
       if (!taskId) return;
@@ -156,8 +207,8 @@ const TaskPage = () => {
   }, [taskId]);
 
   /* =========================
-     Fetch topic task order
-     ========================= */
+     Fetch task order in topic
+  ========================= */
   useEffect(() => {
     if (!topicId) return;
 
@@ -175,96 +226,73 @@ const TaskPage = () => {
     fetchTasks();
   }, [topicId]);
 
-const markTopicCompletedSimple = async (userId: string, topicId: string) => {
-  if (!topicId) return;
-  const userTopicRef = doc(db, "users", userId, "topics", topicId);
-  try {
-    await setDoc(
-      userTopicRef,
-      {
-        completed: true,
-        completedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-    console.log("Topic marked completed:", topicId);
-  } catch (error) {
-    console.error("Failed to mark topic completed:", error);
-  }
-};
+  /* =========================
+     Run code
+  ========================= */
+  const runCode = async () => {
+    setLoading(true);
+    setError(null);
+    setOutput("");
+    setSuccess(false);
 
-const runCode = async () => {
-  setLoading(true);
-  setError(null);
-  setOutput("");
-  setSuccess(false);
+    try {
+      const res = await fetch(RUN_JAVA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
 
-  try {
-    const res = await fetch(RUN_JAVA_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
+      const data = await res.json();
+      const trimmedOutput = (data.output || "").trim();
+      setOutput(trimmedOutput);
 
-    const data = await res.json();
-    const trimmedOutput = (data.output || "").trim();
-    setOutput(trimmedOutput);
+      if (!taskId) return;
 
-    if (!taskId) {
-      setLoading(false);
-      return;
-    }
-    const user = auth.currentUser;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+      const user = auth.currentUser;
+      if (!user) return;
 
-    const isCorrect = trimmedOutput === expectedOutput.trim();
-    const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
-    const snap = await getDoc(userTaskRef);
-    const wasCompleted = snap.exists() && snap.data()?.completed === true;
+      const isCorrect = trimmedOutput === expectedOutput.trim();
+      const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
+      const snap = await getDoc(userTaskRef);
+      const wasCompleted = snap.exists() && snap.data()?.completed === true;
 
-    await setDoc(
-      userTaskRef,
-      {
-        code,
-        completed: isCorrect,
-        lastRunAt: serverTimestamp(),
-        ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
-      },
-      { merge: true }
-    );
+      await setDoc(
+        userTaskRef,
+        {
+          code,
+          completed: isCorrect,
+          lastRunAt: serverTimestamp(),
+          ...(isCorrect ? { completedAt: serverTimestamp() } : {}),
+        },
+        { merge: true }
+      );
 
-    if (isCorrect && !wasCompleted) {
-      await updateUserProgress(user.uid);
-      if (topicId) {
-        console.log("Marking topic completed for topicId:", topicId);
-        await markTopicCompletedSimple(user.uid, topicId);
+      if (isCorrect && !wasCompleted) {
+        await updateUserProgress(user.uid);
+
+        if (topicId) {
+          await markTopicCompletedIfAllTasksDone(user.uid, topicId);
+        }
       }
+
+      setCompleted(isCorrect);
+      setSuccess(isCorrect);
+      if (!isCorrect) setError("Output does not match expected output.");
+    } catch {
+      setError("Something went wrong while running the code.");
+    } finally {
+      setLoading(false);
     }
-
-    setCompleted(isCorrect);
-    setSuccess(isCorrect);
-    if (!isCorrect) setError("Output does not match expected output.");
-  } catch (err) {
-    console.error("Error running code:", err);
-    setError("Something went wrong while running the code.");
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   /* =========================
      Navigation helpers
-     ========================= */
+  ========================= */
   const currentIndex = taskIdsInTopic.indexOf(taskId || "");
 
   const goToPrevious = () => {
     if (currentIndex <= 0) {
-      if (topicId) navigate(`/topic/${topicId}/tasks`);
-      else navigate(`/`);
+      topicId ? navigate(`/topic/${topicId}/tasks`) : navigate("/");
     } else {
       navigate(`/task/${taskIdsInTopic[currentIndex - 1]}`);
     }
@@ -272,28 +300,14 @@ const runCode = async () => {
 
   const goToNext = () => {
     if (currentIndex === -1 || currentIndex >= taskIdsInTopic.length - 1) {
-      if (topicId) navigate(`/topic/${topicId}/tasks`);
-      else navigate(`/`);
+      topicId ? navigate(`/topic/${topicId}/tasks`) : navigate("/");
     } else {
       navigate(`/task/${taskIdsInTopic[currentIndex + 1]}`);
     }
   };
 
-  if (pageLoading) {
-    return (
-      <div className="main-content">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  if (pageError) {
-    return (
-      <div className="main-content">
-        <p>Error: {pageError}</p>
-      </div>
-    );
-  }
+  if (pageLoading) return <p>Loading...</p>;
+  if (pageError) return <p>Error: {pageError}</p>;
 
   return (
     <div className="main-content" id="taskContent">
@@ -304,7 +318,6 @@ const runCode = async () => {
       )}
 
       <h1>{taskName}</h1>
-
       {taskDescription && <p>{taskDescription}</p>}
 
       <h2>Java Code</h2>
@@ -316,11 +329,7 @@ const runCode = async () => {
       />
 
       <button onClick={runCode} disabled={loading || completed}>
-        {loading
-          ? "Running..."
-          : completed
-          ? "Task Completed"
-          : "Run Code"}
+        {loading ? "Running..." : completed ? "Task Completed" : "Run Code"}
       </button>
 
       <h3>Output</h3>
@@ -328,28 +337,12 @@ const runCode = async () => {
       {error && <p>{error}</p>}
       {success && <p>🎉 Task completed successfully!</p>}
 
-      
-
       <div style={{ marginTop: "1rem" }}>
-        <button
-          onClick={goToPrevious}
-          disabled={loading || pageLoading}
-          aria-label="Go to previous task"
-        >
-          ← Previous
-        </button>
-
+        <button onClick={goToPrevious}>← Previous</button>
         <span style={{ margin: "0 1rem" }}>
           Task {currentIndex + 1} of {taskIdsInTopic.length}
         </span>
-
-        <button
-          onClick={goToNext}
-          disabled={loading || pageLoading}
-          aria-label="Go to next task"
-        >
-          Next →
-        </button>
+        <button onClick={goToNext}>Next →</button>
       </div>
     </div>
   );
