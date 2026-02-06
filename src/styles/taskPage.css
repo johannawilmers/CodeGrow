@@ -83,19 +83,19 @@ pre {
 ========================= */
 
 .main-content p.error {
-  color: #ef4444;
+  color: var(--error-main);
   font-weight: bold;
 }
 
 .main-content p.success {
-  color: #22c55e;
+  color: var(--success-main);
   font-weight: bold;
 }
 
 
 
 .main-content button:hover:not(:disabled) {
-  background: var(--secondary-color);
+  background: var(--success-dark);
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.22);
 }

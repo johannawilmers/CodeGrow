@@ -310,7 +310,7 @@ const TaskPage = () => {
   if (pageError) return <p>Error: {pageError}</p>;
 
   return (
-    <div className="main-content" id="taskContent">
+    <div  id="taskContent">
       {topicId && (
         <button onClick={() => navigate(`/topic/${topicId}/tasks`)}>
           ← Back to Tasks

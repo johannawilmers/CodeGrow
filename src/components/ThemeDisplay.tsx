@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db, auth } from "../firebase"; // Make sure to import auth to get current user
+import { db, auth } from "../firebase";
 import { Link } from "react-router-dom";
 
 interface Topic {
@@ -28,14 +28,13 @@ const ThemesOverview = () => {
       try {
         setLoading(true);
 
-        // Fetch themes and topics
         const [themesSnap, topicsSnap] = await Promise.all([
           getDocs(collection(db, "themes")),
           getDocs(collection(db, "topics")),
         ]);
 
-        // Build themes map
         const themesMap: Record<string, Theme> = {};
+
         themesSnap.forEach((doc) => {
           const data = doc.data();
           themesMap[doc.id] = {
@@ -46,46 +45,35 @@ const ThemesOverview = () => {
           };
         });
 
-        // Attach topics to themes
         topicsSnap.forEach((doc) => {
           const data = doc.data();
-          let theme: string | undefined;
-          if (typeof data.theme === "string") {
-            theme = data.theme;
-          } else if (data.theme?.id) {
-            theme = data.theme.id;
-          } else {
-            theme = undefined;
-          }
+          const themeId =
+            typeof data.theme === "string"
+              ? data.theme
+              : data.theme?.id;
 
-          if (!theme || !themesMap[theme]) return;
+          if (!themeId || !themesMap[themeId]) return;
 
-          themesMap[theme].topics.push({
+          themesMap[themeId].topics.push({
             id: doc.id,
             name: data.name ?? "Unnamed topic",
             order: typeof data.order === "number" ? data.order : 999,
-            theme,
+            theme: themeId,
           });
         });
 
-        // Sort topics inside each theme
-        Object.values(themesMap).forEach((theme) => {
-          theme.topics.sort((a, b) => a.order - b.order);
-        });
+        Object.values(themesMap).forEach((theme) =>
+          theme.topics.sort((a, b) => a.order - b.order)
+        );
 
-        // Sort themes
         const sortedThemes = Object.values(themesMap).sort(
           (a, b) => a.order - b.order
         );
 
         setThemes(sortedThemes);
 
-        // Fetch completed topics for current user
         const user = auth.currentUser;
-        if (!user) {
-          setCompletedTopics(new Set());
-          return;
-        }
+        if (!user) return;
 
         const userTopicsSnap = await getDocs(
           collection(db, "users", user.uid, "topics")
@@ -93,8 +81,7 @@ const ThemesOverview = () => {
 
         const completedSet = new Set<string>();
         userTopicsSnap.forEach((doc) => {
-          const data = doc.data();
-          if (data.completed === true) {
+          if (doc.data().completed === true) {
             completedSet.add(doc.id);
           }
         });
@@ -114,74 +101,77 @@ const ThemesOverview = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-  <div className="themes-collection">
+    <div >
+      {themes.length === 0 && <p>No themes found</p>}
 
-    {themes.length === 0 && <p>No themes found</p>}
+      {/* OOP THEMES */}
+      {themes.length > 0 && (
+        <div className="themes-collection">
+          <h1>Objekt-orientert programmering</h1>
 
-    {/* First 4 themes block with heading "OOP" */}
-    {themes.length > 0 && (
-      <div className="theme-group">
-        <h1>Objekt-orientert programmering</h1>
-        {themes.slice(0, 4).map((theme) => (
-          <div key={theme.id} className="theme-block">
-            <h2>{theme.name}</h2>
-            {theme.topics.length === 0 ? (
-              <p className="empty-topics">No topics available</p>
-            ) : (
-              <ul className="topic-list">
-                {theme.topics.map((topic) => {
-                  const isCompleted = completedTopics.has(topic.id);
-                  return (
+          {themes.slice(0, 4).map((theme) => (
+            <div key={theme.id} className="theme-block">
+              <h2>{theme.name}</h2>
+
+              {theme.topics.length === 0 ? (
+                <p className="empty-topics">No topics available</p>
+              ) : (
+                <ul className="topic-list">
+                  {theme.topics.map((topic) => (
                     <li
                       key={topic.id}
-                      className={isCompleted ? "topic-completed" : "topic-pending"}
+                      className={
+                        completedTopics.has(topic.id)
+                          ? "topic-completed"
+                          : "topic-pending"
+                      }
                     >
                       <Link to={`/topic/${topic.id}/tasks`}>
                         {topic.name}
                       </Link>
                     </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        ))}
-      </div>
-    )}
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
-    {/* Remaining themes block with heading "Java" */}
-    {themes.length > 4 && (
-      <div className="theme-group">
-        <h1>Java-teknikker</h1>
-        {themes.slice(4).map((theme) => (
-          <div key={theme.id} className="theme-block">
-            <h2>{theme.name}</h2>
-            {theme.topics.length === 0 ? (
-              <p className="empty-topics">No topics available</p>
-            ) : (
-              <ul className="topic-list">
-                {theme.topics.map((topic) => {
-                  const isCompleted = completedTopics.has(topic.id);
-                  return (
+      {themes.length > 4 && (
+        <div className="themes-collection">
+          <h1>Java-teknikker</h1>
+
+          {themes.slice(4).map((theme) => (
+            <div key={theme.id} className="theme-block">
+              <h2>{theme.name}</h2>
+
+              {theme.topics.length === 0 ? (
+                <p className="empty-topics">No topics available</p>
+              ) : (
+                <ul className="topic-list">
+                  {theme.topics.map((topic) => (
                     <li
                       key={topic.id}
-                      className={isCompleted ? "topic-completed" : "topic-pending"}
+                      className={
+                        completedTopics.has(topic.id)
+                          ? "topic-completed"
+                          : "topic-pending"
+                      }
                     >
                       <Link to={`/topic/${topic.id}/tasks`}>
                         {topic.name}
                       </Link>
                     </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-);
-
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ThemesOverview;
