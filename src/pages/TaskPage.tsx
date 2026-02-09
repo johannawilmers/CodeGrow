@@ -20,9 +20,7 @@ import "../styles/taskPage.css";
 const RUN_JAVA_URL =
   "https://us-central1-codegrow-5894a.cloudfunctions.net/runJava";
 
-/* =========================
-   Helper: update user stats
-========================= */
+/* Helper: update user stats */
 const updateUserProgress = async (uid: string) => {
   const userRef = doc(db, "users", uid);
 
@@ -92,10 +90,7 @@ const updateUserProgress = async (uid: string) => {
   };
 };
 
-
-/* =========================
-   Helper: unlock badges
-========================= */
+/* Helper: unlock badges */
 const unlockBadges = async (
   uid: string,
   stats: { completedTasksCount: number; currentStreak: number }
@@ -142,15 +137,12 @@ const unlockBadges = async (
     }
   }
 };
-/* =========================
-   Helper: mark topic completed
-   ONLY if all tasks are done
-========================= */
+
+/* Helper: mark topic completed ONLY if all tasks done */
 const markTopicCompletedIfAllTasksDone = async (
   userId: string,
   topicId: string
 ) => {
-  // All tasks in topic
   const tasksQuery = query(
     collection(db, "tasks"),
     where("topicId", "==", topicId)
@@ -161,7 +153,6 @@ const markTopicCompletedIfAllTasksDone = async (
 
   if (taskIds.length === 0) return;
 
-  // User completed tasks
   const userTasksSnap = await getDocs(
     collection(db, "users", userId, "tasks")
   );
@@ -173,14 +164,10 @@ const markTopicCompletedIfAllTasksDone = async (
     }
   });
 
-  // Check if ALL tasks are completed
-  const allCompleted = taskIds.every((id) =>
-    completedTaskIds.has(id)
-  );
+  const allCompleted = taskIds.every((id) => completedTaskIds.has(id));
 
   if (!allCompleted) return;
 
-  // Mark topic completed
   const userTopicRef = doc(db, "users", userId, "topics", topicId);
   await setDoc(
     userTopicRef,
@@ -192,9 +179,7 @@ const markTopicCompletedIfAllTasksDone = async (
   );
 };
 
-/* =========================
-   Component
-========================= */
+/* Component */
 const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
@@ -216,9 +201,6 @@ const TaskPage = () => {
   const [success, setSuccess] = useState(false);
   const [completed, setCompleted] = useState(false);
 
-  /* =========================
-     Fetch task
-  ========================= */
   useEffect(() => {
     const fetchTask = async () => {
       if (!taskId) return;
@@ -268,9 +250,6 @@ const TaskPage = () => {
     fetchTask();
   }, [taskId]);
 
-  /* =========================
-     Fetch task order in topic
-  ========================= */
   useEffect(() => {
     if (!topicId) return;
 
@@ -288,9 +267,6 @@ const TaskPage = () => {
     fetchTasks();
   }, [topicId]);
 
-  /* =========================
-     Run code
-  ========================= */
   const runCode = async () => {
     setLoading(true);
     setError(null);
@@ -348,9 +324,6 @@ const TaskPage = () => {
     }
   };
 
-  /* =========================
-     Navigation helpers
-  ========================= */
   const currentIndex = taskIdsInTopic.indexOf(taskId || "");
 
   const goToPrevious = () => {
@@ -363,7 +336,7 @@ const TaskPage = () => {
 
   const goToNext = () => {
     if (currentIndex === -1 || currentIndex >= taskIdsInTopic.length - 1) {
-      topicId ? navigate(`/topic/${topicId}/tasks`) : navigate("/");
+      navigate("/");
     } else {
       navigate(`/task/${taskIdsInTopic[currentIndex + 1]}`);
     }
@@ -373,7 +346,7 @@ const TaskPage = () => {
   if (pageError) return <p>Error: {pageError}</p>;
 
   return (
-    <div  id="taskContent">
+    <div id="taskContent">
       {topicId && (
         <button onClick={() => navigate(`/topic/${topicId}/tasks`)}>
           ← Back to Tasks
@@ -405,7 +378,9 @@ const TaskPage = () => {
         <span style={{ margin: "0 1rem" }}>
           Task {currentIndex + 1} of {taskIdsInTopic.length}
         </span>
-        <button onClick={goToNext}>Next →</button>
+        <button onClick={goToNext}>
+        {currentIndex === taskIdsInTopic.length - 1 ? "Finish" : "Next →"}
+      </button>
       </div>
     </div>
   );
