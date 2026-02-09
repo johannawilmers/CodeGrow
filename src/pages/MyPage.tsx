@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import { auth } from "../firebase";
+import Badges from "../components/Badges";
 
 const MyPage: React.FC = () => {
   const [user, setUser] = useState<firebase.User | null>(auth.currentUser);
@@ -50,10 +51,9 @@ const MyPage: React.FC = () => {
           </p>
         </div>
       </div>
-      <div>
-        <h1>Rewards</h1>
-        <p>Coming soon!</p>
-      </div>
+  
+        <Badges />
+     
     </div>
   );
 };

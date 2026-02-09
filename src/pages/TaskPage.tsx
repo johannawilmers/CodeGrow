@@ -14,6 +14,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import { BADGES } from "../badges/BadgeConfig";
 import "../styles/taskPage.css";
 
 const RUN_JAVA_URL =
@@ -24,6 +25,9 @@ const RUN_JAVA_URL =
 ========================= */
 const updateUserProgress = async (uid: string) => {
   const userRef = doc(db, "users", uid);
+
+  let updatedCompletedTasks = 0;
+  let updatedStreak = 0;
 
   await runTransaction(db, async (tx) => {
     const userSnap = await tx.get(userRef);
@@ -68,18 +72,76 @@ const updateUserProgress = async (uid: string) => {
     else if (diffDays === 1) newStreak = currentStreak + 1;
     else newStreak = 1;
 
+    updatedCompletedTasks = completedTasksCount + 1;
+    updatedStreak = newStreak;
+
     tx.set(
       userRef,
       {
         lastCompletedDate: Timestamp.fromDate(today),
-        completedTasksCount: completedTasksCount + 1,
-        currentStreak: newStreak,
+        completedTasksCount: updatedCompletedTasks,
+        currentStreak: updatedStreak,
       },
       { merge: true }
     );
   });
+
+  return {
+    completedTasksCount: updatedCompletedTasks,
+    currentStreak: updatedStreak,
+  };
 };
 
+
+/* =========================
+   Helper: unlock badges
+========================= */
+const unlockBadges = async (
+  uid: string,
+  stats: { completedTasksCount: number; currentStreak: number }
+) => {
+  const userBadgesRef = collection(db, "users", uid, "badges");
+  const snap = await getDocs(userBadgesRef);
+
+  const unlocked = new Set(
+    snap.docs.filter((d) => d.data().unlocked).map((d) => d.id)
+  );
+
+  for (const badge of BADGES) {
+    if (unlocked.has(badge.id)) continue;
+
+    let shouldUnlock = false;
+
+    switch (badge.trigger) {
+      case "FIRST_TASK":
+        shouldUnlock = stats.completedTasksCount >= 1;
+        break;
+
+      case "TASKS_COMPLETED":
+        shouldUnlock =
+          badge.value !== undefined &&
+          stats.completedTasksCount >= badge.value;
+        break;
+
+      case "STREAK":
+        shouldUnlock =
+          badge.value !== undefined &&
+          stats.currentStreak >= badge.value;
+        break;
+    }
+
+    if (shouldUnlock) {
+      await setDoc(
+        doc(db, "users", uid, "badges", badge.id),
+        {
+          unlocked: true,
+          unlockedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+  }
+};
 /* =========================
    Helper: mark topic completed
    ONLY if all tasks are done
@@ -268,7 +330,8 @@ const TaskPage = () => {
       );
 
       if (isCorrect && !wasCompleted) {
-        await updateUserProgress(user.uid);
+        const stats = await updateUserProgress(user.uid);
+        await unlockBadges(user.uid, stats);
 
         if (topicId) {
           await markTopicCompletedIfAllTasksDone(user.uid, topicId);
