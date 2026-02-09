@@ -79,7 +79,7 @@ body {
 .main-content {
   flex: 1;
   padding: 2rem;
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   padding-top: 110px; /* space for navbar */

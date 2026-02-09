@@ -26,12 +26,6 @@ const MyPage: React.FC = () => {
   return (
     <div className="main-content">
       <div >
-        {user.photoURL && (
-          <img
-            src={user.photoURL}
-            alt={user.displayName ?? "avatar"}
-          />
-        )}
 
         <h1>{user.displayName ?? "Unnamed user"}</h1>
         
