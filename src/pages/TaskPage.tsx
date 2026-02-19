@@ -204,6 +204,10 @@ const TaskPage = () => {
   useEffect(() => {
     const fetchTask = async () => {
       if (!taskId) return;
+      setCompleted(false);
+      setSuccess(false);
+      setError(null);
+      setOutput("");
 
       try {
         setPageLoading(true);
