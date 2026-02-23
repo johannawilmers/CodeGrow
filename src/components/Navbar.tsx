@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import { auth } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/navbar.css";
 import Streak from "./Streak";
 
@@ -60,6 +61,12 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
             }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "home",
+              })
+            }
           >
             Home
           </NavLink>
@@ -68,6 +75,12 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
             }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "mypage",
+              })
+            }
           >
             My Page
           </NavLink>
@@ -75,6 +88,12 @@ const Navbar = () => {
             to="/social"
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
+            }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "social",
+              })
             }
           >
             Social
@@ -101,7 +120,16 @@ const Navbar = () => {
           </>
         )}
 
-        <button onClick={handleLogout} className="logout-button">
+        <button
+          onClick={() => {
+            logUserClick(auth.currentUser?.uid, {
+              type: "action_click",
+              target: "logout",
+            });
+            handleLogout();
+          }}
+          className="logout-button"
+        >
           Logout
         </button>
       </div>
