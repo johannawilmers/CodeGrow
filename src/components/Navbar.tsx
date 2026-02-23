@@ -105,18 +105,6 @@ const Navbar = () => {
         {displayName && (
           <>
             <Streak streak={streak} />
-
-            {/* User Icon */}
-            <div className="user-icon" title={displayName}>
-              {photoURL ? (
-                <img src={photoURL} alt="User avatar" />
-              ) : (
-                <div className="user-icon-fallback" aria-label="User icon">
-                  {/* You can replace with SVG or emoji */}
-                  👤
-                </div>
-              )}
-            </div>
           </>
         )}
 
