@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import { Link } from "react-router-dom";
 
 interface Topic {
@@ -126,7 +127,16 @@ const ThemesOverview = () => {
                           : "topic-pending"
                       }
                     >
-                      <Link to={`/topic/${topic.id}/tasks`}>
+                      <Link
+                        to={`/topic/${topic.id}/tasks`}
+                        onClick={() =>
+                          logUserClick(auth.currentUser?.uid, {
+                            type: "topic_click",
+                            target: topic.id,
+                            metadata: { name: topic.name },
+                          })
+                        }
+                      >
                         {topic.name}
                       </Link>
                     </li>
@@ -159,7 +169,16 @@ const ThemesOverview = () => {
                           : "topic-pending"
                       }
                     >
-                      <Link to={`/topic/${topic.id}/tasks`}>
+                      <Link
+                        to={`/topic/${topic.id}/tasks`}
+                        onClick={() =>
+                          logUserClick(auth.currentUser?.uid, {
+                            type: "topic_click",
+                            target: topic.id,
+                            metadata: { name: topic.name },
+                          })
+                        }
+                      >
                         {topic.name}
                       </Link>
                     </li>
