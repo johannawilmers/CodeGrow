@@ -10,6 +10,7 @@ import {
   orderBy
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/taskByTopic.css";
 
 interface Task {
@@ -91,12 +92,22 @@ const TasksByTopicPage = () => {
 
   return (
     <div className="main-content" id="taskByTopic">
-      <button onClick={() => navigate("/")}>← Back</button>
+      <button
+        onClick={() => {
+          logUserClick(auth.currentUser?.uid, {
+            type: "nav_click",
+            target: "back_to_home",
+          });
+          navigate("/");
+        }}
+      >
+        ← Back
+      </button>
 
       <h1>{topicName}</h1>
 
       {tasks.length === 0 ? (
-        <p>No tasks found.</p>
+        <p>New tasks coming soon!</p>
       ) : (
         <ul>
           {tasks.map(task => (
@@ -104,7 +115,18 @@ const TasksByTopicPage = () => {
               key={task.id}
               className={completedTaskIds.has(task.id) ? "completed-task" : ""}
             >
-              <Link to={`/task/${task.id}`}>{task.title}</Link>
+              <Link
+                to={`/task/${task.id}`}
+                onClick={() =>
+                  logUserClick(auth.currentUser?.uid, {
+                    type: "task_link",
+                    target: task.id,
+                    metadata: { title: task.title },
+                  })
+                }
+              >
+                {task.title}
+              </Link>
             </li>
 
           ))}

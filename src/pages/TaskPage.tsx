@@ -14,6 +14,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import { BADGES } from "../badges/BadgeConfig";
 import "../styles/taskPage.css";
 
@@ -272,6 +273,11 @@ const TaskPage = () => {
   }, [topicId]);
 
   const runCode = async () => {
+    // Log the user initiating a code run
+    logUserClick(auth.currentUser?.uid, {
+      type: "run_code",
+      target: taskId ?? "unknown",
+    });
     setLoading(true);
     setError(null);
     setOutput("");
@@ -331,6 +337,12 @@ const TaskPage = () => {
   const currentIndex = taskIdsInTopic.indexOf(taskId || "");
 
   const goToPrevious = () => {
+    logUserClick(auth.currentUser?.uid, {
+      type: "navigation",
+      target: "previous",
+      metadata: { from: taskId },
+    });
+
     if (currentIndex <= 0) {
       topicId ? navigate(`/topic/${topicId}/tasks`) : navigate("/");
     } else {
@@ -339,6 +351,12 @@ const TaskPage = () => {
   };
 
   const goToNext = () => {
+    logUserClick(auth.currentUser?.uid, {
+      type: "navigation",
+      target: "next",
+      metadata: { from: taskId },
+    });
+
     if (currentIndex === -1 || currentIndex >= taskIdsInTopic.length - 1) {
       navigate("/");
     } else {
@@ -351,11 +369,19 @@ const TaskPage = () => {
 
   return (
     <div id="taskContent">
-      {topicId && (
-        <button onClick={() => navigate(`/topic/${topicId}/tasks`)}>
-          ← Back to Tasks
-        </button>
-      )}
+          {topicId && (
+            <button
+              onClick={() => {
+                logUserClick(auth.currentUser?.uid, {
+                  type: "nav_click",
+                  target: `back_to_tasks_${topicId}`,
+                });
+                navigate(`/topic/${topicId}/tasks`);
+              }}
+            >
+              ← Back to Tasks
+            </button>
+          )}
 
       <h1>{taskName}</h1>
       {taskDescription && <p>{taskDescription}</p>}

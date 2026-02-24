@@ -32,13 +32,8 @@ const Login: React.FC<Props> = ({ children }) => {
           await userDocRef.set(
             {
               uid: currentUser.uid,
-              displayName: currentUser.displayName || null,
-              email: currentUser.email || null,
-              photoURL: currentUser.photoURL || null,
-              providers: (currentUser.providerData || []).map((p) => p?.providerId),
               createdAt: now,
               lastLogin: now,
-              // New initial task/streak fields:
               completedTasksCount: 0,
               currentStreak: 0,
               longestStreak: 0,

@@ -3,25 +3,23 @@ import { NavLink } from "react-router-dom";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import { auth } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/navbar.css";
 import Streak from "./Streak";
 
 const Navbar = () => {
   const [streak, setStreak] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [photoURL, setPhotoURL] = useState<string | null>(null);
-
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (!user) {
         setDisplayName(null);
         setStreak(null);
-        setPhotoURL(null);
+
         return;
       }
 
       setDisplayName(user.displayName || user.email || null);
-      setPhotoURL(user.photoURL || null);
 
       const userDocRef = firebase.firestore().doc(`users/${user.uid}`);
       const unsubscribeDoc = userDocRef.onSnapshot(
@@ -60,6 +58,12 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
             }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "home",
+              })
+            }
           >
             Home
           </NavLink>
@@ -68,6 +72,12 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
             }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "mypage",
+              })
+            }
           >
             My Page
           </NavLink>
@@ -75,6 +85,12 @@ const Navbar = () => {
             to="/social"
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
+            }
+            onClick={() =>
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: "social",
+              })
             }
           >
             Social
@@ -86,22 +102,19 @@ const Navbar = () => {
         {displayName && (
           <>
             <Streak streak={streak} />
-
-            {/* User Icon */}
-            <div className="user-icon" title={displayName}>
-              {photoURL ? (
-                <img src={photoURL} alt="User avatar" />
-              ) : (
-                <div className="user-icon-fallback" aria-label="User icon">
-                  {/* You can replace with SVG or emoji */}
-                  👤
-                </div>
-              )}
-            </div>
           </>
         )}
 
-        <button onClick={handleLogout} className="logout-button">
+        <button
+          onClick={() => {
+            logUserClick(auth.currentUser?.uid, {
+              type: "action_click",
+              target: "logout",
+            });
+            handleLogout();
+          }}
+          className="logout-button"
+        >
           Logout
         </button>
       </div>

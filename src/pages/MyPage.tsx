@@ -26,13 +26,9 @@ const MyPage: React.FC = () => {
   return (
     <div className="main-content">
       <div >
-
-        <h1>{user.displayName ?? "Unnamed user"}</h1>
-        
+      
         <div>
-          <p>
-            <strong>Email:</strong> {user.email ?? "—"}
-          </p>
+         
          
           <p>
             <strong>Providers:</strong>{" "}
@@ -42,6 +38,9 @@ const MyPage: React.FC = () => {
           </p>
           <p>
             <strong>Email verified:</strong> {user.emailVerified ? "Yes" : "No"}
+          </p>
+          <p>
+            <strong>User ID:</strong> {user.uid}
           </p>
         </div>
       </div>
