@@ -10,19 +10,16 @@ import Streak from "./Streak";
 const Navbar = () => {
   const [streak, setStreak] = useState<number | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [photoURL, setPhotoURL] = useState<string | null>(null);
-
   useEffect(() => {
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (!user) {
         setDisplayName(null);
         setStreak(null);
-        setPhotoURL(null);
+
         return;
       }
 
       setDisplayName(user.displayName || user.email || null);
-      setPhotoURL(user.photoURL || null);
 
       const userDocRef = firebase.firestore().doc(`users/${user.uid}`);
       const unsubscribeDoc = userDocRef.onSnapshot(
