@@ -12,6 +12,7 @@ import TasksByTopicPage from "./pages/TaskByTopic";
 
 import { validateStreak } from "./utils/validateStreak";
 import ThemeTopicManager from "./pages/ThemeTopicManager";
+import AdminPage from "./pages/AdminPage";
 
 function App() {
   useEffect(() => {
@@ -33,6 +34,7 @@ function App() {
           <Route path="/task/:taskId" element={<TaskPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/social" element={<Social />} />
+          <Route path="/admin" element={<AdminPage />} />
           
           <Route
             path="/topic/:topicId/tasks"

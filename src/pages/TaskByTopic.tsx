@@ -107,7 +107,7 @@ const TasksByTopicPage = () => {
       <h1>{topicName}</h1>
 
       {tasks.length === 0 ? (
-        <p>No tasks found.</p>
+        <p>New tasks coming soon!</p>
       ) : (
         <ul>
           {tasks.map(task => (
