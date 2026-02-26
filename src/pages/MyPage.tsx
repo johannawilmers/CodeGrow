@@ -5,14 +5,9 @@ import { auth } from "../firebase";
 import Badges from "../components/Badges";
 
 const MyPage: React.FC = () => {
-  const [user, setUser] = useState<firebase.User | null>(auth.currentUser);
+  const [user] = useState<firebase.User | null>(auth.currentUser);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u: firebase.User | null) => {
-      setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
+ 
 
   if (!user) {
     return (

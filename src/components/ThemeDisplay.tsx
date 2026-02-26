@@ -110,9 +110,9 @@ const ThemesOverview = () => {
         <div className="themes-collection">
           <h1>Objekt-orientert programmering</h1>
 
-          {themes.slice(0, 4).map((theme) => (
+          {themes.slice(0, 4).map((theme, idx) => (
             <div key={theme.id} className="theme-block">
-              <h2>{theme.name}</h2>
+              <h2>{idx + 1}. {theme.name}</h2>
 
               {theme.topics.length === 0 ? (
                 <p className="empty-topics">No topics available</p>
@@ -129,6 +129,7 @@ const ThemesOverview = () => {
                     >
                       <Link
                         to={`/topic/${topic.id}/tasks`}
+                        className="topic-link"
                         onClick={() =>
                           logUserClick(auth.currentUser?.uid, {
                             type: "topic_click",
@@ -136,6 +137,7 @@ const ThemesOverview = () => {
                             metadata: { name: topic.name },
                           })
                         }
+                        style={{ display: "block", width: "100%" }}
                       >
                         {topic.name}
                       </Link>
@@ -152,9 +154,9 @@ const ThemesOverview = () => {
         <div className="themes-collection">
           <h1>Java-teknikker</h1>
 
-          {themes.slice(4).map((theme) => (
+          {themes.slice(4).map((theme, idx) => (
             <div key={theme.id} className="theme-block">
-              <h2>{theme.name}</h2>
+              <h2>{idx + 1}. {theme.name}</h2>
 
               {theme.topics.length === 0 ? (
                 <p className="empty-topics">No topics available</p>
@@ -171,6 +173,7 @@ const ThemesOverview = () => {
                     >
                       <Link
                         to={`/topic/${topic.id}/tasks`}
+                        className="topic-link"
                         onClick={() =>
                           logUserClick(auth.currentUser?.uid, {
                             type: "topic_click",
@@ -178,6 +181,7 @@ const ThemesOverview = () => {
                             metadata: { name: topic.name },
                           })
                         }
+                        style={{ display: "block", width: "100%" }}
                       >
                         {topic.name}
                       </Link>

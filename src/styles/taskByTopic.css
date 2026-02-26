@@ -83,6 +83,31 @@
   background-color: #dbf4e4;
 }
 
+/* =========================
+   STARTED BUT INCORRECT
+========================= */
+
+#taskByTopic .started-incorrect {
+  position: relative; /* anchor the ::after X inside the list item */
+  background-color: var(--error-main);
+  border-color: var(--error-dark);
+}
+
+#taskByTopic .started-incorrect a {
+  color: var(--error-dark);
+}
+#taskByTopic .started-incorrect::after {
+  content: "✗";
+  position: absolute;
+  top: 50%;
+  right: 1.2rem; /* same as padding */
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--error-dark);
+  pointer-events: none; /* so it doesn't interfere with clicks */
+
+}
+
 #taskByTopic .completed-task::after {
   content: "✓";
   position: absolute;

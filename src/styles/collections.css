@@ -60,11 +60,11 @@
 
 
 .topic-completed {
-  background-color: var(--success-dark); /* Green */
+  background-color: var(--success-light); /* Green */
 }
 
 .topic-pending {
- background-color: var(--success-light);
+ background-color: var(--topic-incompleted); 
 }
 
 /* Keep the rest of your styling such as padding, border-radius, etc. */
@@ -82,11 +82,11 @@
 }
 
 .topic-completed:hover {
-  background-color: var(--success-dark); /* Darker green */
+  background-color: var(--success-main); /* Darker green */
 }
 
 .topic-pending:hover {
-  background-color: var(--success-dark); /* Darker gray */
+  background-color: var(--success-light); /* Darker gray */
 }
 
 

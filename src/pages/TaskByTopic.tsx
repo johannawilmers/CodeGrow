@@ -25,6 +25,7 @@ const TasksByTopicPage = () => {
   const [topicName, setTopicName] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
+  const [startedIncorrectIds, setStartedIncorrectIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,15 +68,20 @@ const TasksByTopicPage = () => {
         );
 
         const completedSet = new Set<string>();
+        const startedIncorrectSet = new Set<string>();
 
         userTasksSnap.forEach(doc => {
           const data = doc.data();
           if (data.completed === true) {
             completedSet.add(doc.id); // 👈 taskId
+          } else if (data.code && data.completed === false) {
+            // Task was started and last run was incorrect
+            startedIncorrectSet.add(doc.id);
           }
         });
 
         setCompletedTaskIds(completedSet);
+        setStartedIncorrectIds(startedIncorrectSet);
 
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong");
@@ -113,7 +119,13 @@ const TasksByTopicPage = () => {
           {tasks.map(task => (
             <li
               key={task.id}
-              className={completedTaskIds.has(task.id) ? "completed-task" : ""}
+              className={
+                completedTaskIds.has(task.id)
+                  ? "completed-task"
+                  : startedIncorrectIds.has(task.id)
+                  ? "started-incorrect"
+                  : ""
+              }
             >
               <Link
                 to={`/task/${task.id}`}

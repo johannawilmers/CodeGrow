@@ -38,3 +38,12 @@ main,
     min-height: calc(100vh - 96px);
   }
 }
+
+/* Make topic links fill their list item so the whole card is clickable */
+.topic-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
