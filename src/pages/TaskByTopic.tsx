@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   doc,
   getDoc,
@@ -23,6 +24,7 @@ const TasksByTopicPage = () => {
   const { topicId } = useParams<{ topicId: string }>();
 
   const [topicName, setTopicName] = useState("");
+  const [description, setDescription] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [completedTaskIds, setCompletedTaskIds] = useState<Set<string>>(new Set());
   const [startedIncorrectIds, setStartedIncorrectIds] = useState<Set<string>>(new Set());
@@ -43,6 +45,7 @@ const TasksByTopicPage = () => {
           return;
         }
         setTopicName(topicSnap.data().name || "Unnamed Topic");
+        setDescription(topicSnap.data().description || "");
 
         /* -------- Tasks for topic -------- */
         const tasksQuery = query(
@@ -111,10 +114,19 @@ const TasksByTopicPage = () => {
       </button>
 
       <h1>{topicName}</h1>
-
+      {description && (
+        <div className="topic-description">
+          <ReactMarkdown>{description}</ReactMarkdown>
+        </div>
+      )}
+     
+    
+      <a href="https://www.ntnu.no/wiki/spaces/tdt4100/pages/61147503/Faginnhold">Finn mer informasjon på fag-wiki</a>
+      <h2>Oppgaver:</h2>
       {tasks.length === 0 ? (
         <p>New tasks coming soon!</p>
       ) : (
+        
         <ul>
           {tasks.map(task => (
             <li

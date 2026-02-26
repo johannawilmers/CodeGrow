@@ -90,6 +90,15 @@
   background-color: var(--success-light); /* Darker gray */
 }
 
+.coming-soon-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-weight: normal;
+}
 
 
 

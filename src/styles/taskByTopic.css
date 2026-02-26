@@ -24,6 +24,17 @@
   margin-bottom: 0.5rem;
 }
 
+#taskByTopic .topic-description {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+#taskByTopic .topic-description strong {
+  color: rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
 /* =========================
    TASK LIST
 ========================= */

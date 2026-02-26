@@ -8,6 +8,7 @@ import Social from "./pages/Social";
 import TaskPage from "./pages/TaskPage";
 import Login from "./components/Login";
 import TasksByTopicPage from "./pages/TaskByTopic";
+import TopicEditor from "./pages/TopicEditor";
 import { useState, useEffect } from "react";
 import SurveyPopup from "./components/SurveyPopup";
 
@@ -57,8 +58,10 @@ function App() {
             path="/topic/:topicId/tasks"
             element={<TasksByTopicPage />}
           />
-
-
+          <Route
+            path="/topic/:topicId/edit"
+            element={<TopicEditor />}
+          />
         </Routes>
       </Login>
     </BrowserRouter>

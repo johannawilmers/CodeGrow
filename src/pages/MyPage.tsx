@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import { auth } from "../firebase";
 import Badges from "../components/Badges";
+import Streak from "../components/Streak";
 
 const MyPage: React.FC = () => {
   const [user] = useState<firebase.User | null>(auth.currentUser);
+  const [streak, setStreak] = useState<number | null>(null);
 
  
 
@@ -23,9 +25,11 @@ const MyPage: React.FC = () => {
       <div >
       
         <div>
+          <h1>My Profile</h1>
          
-         
+         <Streak streak={streak} />
           <p>
+            
             <strong>Providers:</strong>{" "}
             {user.providerData && user.providerData.length > 0
               ? user.providerData.map((p) => p?.providerId).join(", ")
