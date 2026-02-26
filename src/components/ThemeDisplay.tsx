@@ -3,7 +3,6 @@ import { collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { logUserClick } from "../utils/clickLogger";
 import { Link } from "react-router-dom";
-
 interface Topic {
   id: string;
   name: string;
@@ -25,6 +24,7 @@ const ThemesOverview = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -130,13 +130,13 @@ const ThemesOverview = () => {
                       <Link
                         to={`/topic/${topic.id}/tasks`}
                         className="topic-link"
-                        onClick={() =>
+                        onClick={() => {
                           logUserClick(auth.currentUser?.uid, {
                             type: "topic_click",
                             target: topic.id,
                             metadata: { name: topic.name },
-                          })
-                        }
+                          });
+                        }}
                         style={{ display: "block", width: "100%" }}
                       >
                         {topic.name}

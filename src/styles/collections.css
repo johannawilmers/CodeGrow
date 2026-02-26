@@ -54,7 +54,9 @@
   text-decoration: none;
   display: block;
   width: 100%;
+  padding: 1rem 1.5rem;
 }
+
 
 
 
@@ -70,7 +72,6 @@
 /* Keep the rest of your styling such as padding, border-radius, etc. */
 .topic-completed,
 .topic-pending {
-  padding: 1rem 1.5rem;
   border-radius: 30px;
   font-weight: bold;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
@@ -78,8 +79,8 @@
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
- 
 }
+
 
 .topic-completed:hover {
   background-color: var(--success-main); /* Darker green */
