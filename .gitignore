@@ -27,4 +27,5 @@ dist-ssr
 
 src/adminPassword.ts
 src/pages/AdminPage.tsx
-src/firebase.ts
+src/firebaseConfig.ts
+firebase.json
