@@ -7,7 +7,7 @@ import Streak from "../components/Streak";
 
 const MyPage: React.FC = () => {
   const [user] = useState<firebase.User | null>(auth.currentUser);
-  const [streak, setStreak] = useState<number | null>(null);
+  const [streak] = useState<number | null>(null);
 
  
 
