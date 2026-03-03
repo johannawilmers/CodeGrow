@@ -8,6 +8,8 @@ import TaskPage from "../pages/TaskPage";
 
 import TasksByTopicPage from "../pages/TaskByTopic";
 import ThemeTopicManager from "../pages/ThemeTopicManager";
+import AdminPage from "../pages/AdminPage";
+import TopicEditor from "../pages/TopicEditor";
 
 
 const AppRoutes = () => {
@@ -21,7 +23,9 @@ const AppRoutes = () => {
           <Route path="/task" element={<TaskPage />} />
      
           <Route path="/topic/:topicId/tasks" element={<TasksByTopicPage />} />
+          <Route path="/topic/:topicId/edit" element={<TopicEditor />} />
           <Route path="/admin/themes-topics" element={<ThemeTopicManager />} />
+          <Route path="/admin" element={<AdminPage />} />
 
         </Route>
 

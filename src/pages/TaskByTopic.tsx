@@ -112,6 +112,21 @@ const TasksByTopicPage = () => {
       >
         ← Back
       </button>
+      {auth.currentUser && (
+        <button
+          onClick={() => {
+            logUserClick(auth.currentUser?.uid, {
+              type: "nav_click",
+              target: "edit_topic",
+              metadata: { topicId },
+            });
+            navigate(`/topic/${topicId}/edit`);
+          }}
+          style={{ marginLeft: "1rem" }}
+        >
+          Edit Topic
+        </button>
+      )}
 
       <h1>{topicName}</h1>
       {description && (
