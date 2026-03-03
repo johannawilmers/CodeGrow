@@ -201,6 +201,7 @@ const TaskPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -279,6 +280,7 @@ const TaskPage = () => {
       target: taskId ?? "unknown",
     });
     setLoading(true);
+    setShowHint(false);
     setError(null);
     setOutput("");
     setSuccess(false);
@@ -368,50 +370,68 @@ const TaskPage = () => {
   if (pageError) return <p>Error: {pageError}</p>;
 
   return (
-    <div id="taskContent">
-          {topicId && (
-            <button
-              onClick={() => {
-                logUserClick(auth.currentUser?.uid, {
-                  type: "nav_click",
-                  target: `back_to_tasks_${topicId}`,
-                });
-                navigate(`/topic/${topicId}/tasks`);
-              }}
-            >
-              ← Back to Tasks
-            </button>
-          )}
+    <div id="taskContent" style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
+      <div style={{ flex: 1 }}>
+        {topicId && (
+          <button
+            onClick={() => {
+              logUserClick(auth.currentUser?.uid, {
+                type: "nav_click",
+                target: `back_to_tasks_${topicId}`,
+              });
+              navigate(`/topic/${topicId}/tasks`);
+            }}
+          >
+            ← Back to Tasks
+          </button>
+        )}
 
-      <h1>{taskName}</h1>
-      {taskDescription && <p>{taskDescription}</p>}
+        <h1>{taskName}</h1>
+        {taskDescription && <p>{taskDescription}</p>}
 
-      <h2>Java Code</h2>
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={12}
-        disabled={completed}
-      />
+        <h2>Java Code</h2>
+        <textarea
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          rows={12}
+          disabled={completed}
+        />
 
-      <button onClick={runCode} disabled={loading || completed}>
-        {loading ? "Running..." : completed ? "Task Completed" : "Run Code"}
-      </button>
+        <button onClick={runCode} disabled={loading || completed}>
+          {loading ? "Running..." : completed ? "Task Completed" : "Run Code"}
+        </button>
 
-      <h3>Output</h3>
-      <pre>{output}</pre>
-      {error && <p>{error}</p>}
-      {success && <p>🎉 Task completed successfully!</p>}
-
-      <div style={{ marginTop: "1rem" }}>
-        <button onClick={goToPrevious}>← Previous</button>
-        <span style={{ margin: "0 1rem" }}>
-          Task {currentIndex + 1} of {taskIdsInTopic.length}
-        </span>
-        <button onClick={goToNext}>
-        {currentIndex === taskIdsInTopic.length - 1 ? "Finish" : "Next →"}
-      </button>
+        <div style={{ marginTop: "1rem" }}>
+          <button onClick={goToPrevious}>← Previous</button>
+          <span style={{ margin: "0 1rem" }}>
+            Task {currentIndex + 1} of {taskIdsInTopic.length}
+          </span>
+          <button onClick={goToNext}>
+            {currentIndex === taskIdsInTopic.length - 1 ? "Finish" : "Next →"}
+          </button>
+        </div>
       </div>
+
+      <aside style={{ width: 360 }}>
+        <h3>Output</h3>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{output}</pre>
+        {error && <p style={{ color: "crimson" }}>{error}</p>}
+        {success && <p style={{ color: "green" }}>🎉 Task completed successfully!</p>}
+
+        {error && expectedOutput && (
+          <div style={{ marginTop: "0.5rem" }}>
+            <button onClick={() => setShowHint((s) => !s)}>
+              {showHint ? "Hide Hint" : "Show Hint"}
+            </button>
+            {showHint && (
+              <div style={{ marginTop: "0.5rem", background: "#f6f6f6", padding: "0.5rem", borderRadius: 4 }}>
+                <strong>Expected Output</strong>
+                <pre style={{ whiteSpace: "pre-wrap" }}>{expectedOutput}</pre>
+              </div>
+            )}
+          </div>
+        )}
+      </aside>
     </div>
   );
 };

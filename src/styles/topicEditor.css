@@ -1,0 +1,26 @@
+.topic-editor .form-group {
+  margin-bottom: 1rem;
+}
+
+.topic-editor label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.topic-editor input,
+.topic-editor textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.topic-editor .form-actions {
+  margin-top: 1.5rem;
+}
+
+.topic-editor button {
+  margin-right: 0.5rem;
+}

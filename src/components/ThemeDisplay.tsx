@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs} from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { logUserClick } from "../utils/clickLogger";
 import { Link } from "react-router-dom";
-
 interface Topic {
   id: string;
   name: string;
@@ -25,6 +24,7 @@ const ThemesOverview = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -101,6 +101,9 @@ const ThemesOverview = () => {
   if (loading) return <p>Loading themes…</p>;
   if (error) return <p>Error: {error}</p>;
 
+  // themes that should show their topics as coming soon (1-based)
+  const comingSoonThemeNumbers = new Set([4,9,10,11,12,13,14,15, 16]);
+
   return (
     <div >
       {themes.length === 0 && <p>No themes found</p>}
@@ -110,41 +113,51 @@ const ThemesOverview = () => {
         <div className="themes-collection">
           <h1>Objekt-orientert programmering</h1>
 
-          {themes.slice(0, 4).map((theme) => (
-            <div key={theme.id} className="theme-block">
-              <h2>{theme.name}</h2>
+          {themes.slice(0, 4).map((theme, idx) => {
+            const themeDisplayNumber = idx + 1; // reset within block
+            const themeGlobalIndex = idx + 1; // global counting for badge
+            const isThemeComing = comingSoonThemeNumbers.has(themeGlobalIndex);
+            return (
+              <div key={theme.id} className="theme-block">
+                <h2>{themeDisplayNumber}. {theme.name}</h2>
 
-              {theme.topics.length === 0 ? (
-                <p className="empty-topics">No topics available</p>
-              ) : (
-                <ul className="topic-list">
-                  {theme.topics.map((topic) => (
-                    <li
-                      key={topic.id}
-                      className={
-                        completedTopics.has(topic.id)
-                          ? "topic-completed"
-                          : "topic-pending"
-                      }
-                    >
-                      <Link
-                        to={`/topic/${topic.id}/tasks`}
-                        onClick={() =>
-                          logUserClick(auth.currentUser?.uid, {
-                            type: "topic_click",
-                            target: topic.id,
-                            metadata: { name: topic.name },
-                          })
+                {theme.topics.length === 0 ? (
+                  <p className="empty-topics">No topics available</p>
+                ) : (
+                  <ul className="topic-list">
+                    {theme.topics.map((topic) => (
+                      <li
+                        key={topic.id}
+                        className={
+                          completedTopics.has(topic.id)
+                            ? "topic-completed"
+                            : "topic-pending"
                         }
                       >
-                        {topic.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
+                        <Link
+                          to={`/topic/${topic.id}/tasks`}
+                          className="topic-link"
+                          onClick={() => {
+                            logUserClick(auth.currentUser?.uid, {
+                              type: "topic_click",
+                              target: topic.id,
+                              metadata: { name: topic.name },
+                            });
+                          }}
+                          style={{ display: "block", width: "100%" }}
+                        >
+                          {topic.name}
+                          {isThemeComing && (
+                            <span className="coming-soon-badge">Coming soon</span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -152,41 +165,51 @@ const ThemesOverview = () => {
         <div className="themes-collection">
           <h1>Java-teknikker</h1>
 
-          {themes.slice(4).map((theme) => (
-            <div key={theme.id} className="theme-block">
-              <h2>{theme.name}</h2>
+          {themes.slice(4).map((theme, idx) => {
+            const themeDisplayNumber = idx + 1; // reset numbering for second block
+            const themeGlobalIndex = 4 + idx + 1; // original global index for badge
+            const isThemeComing = comingSoonThemeNumbers.has(themeGlobalIndex);
+            return (
+              <div key={theme.id} className="theme-block">
+                <h2>{themeDisplayNumber}. {theme.name}</h2>
 
-              {theme.topics.length === 0 ? (
-                <p className="empty-topics">No topics available</p>
-              ) : (
-                <ul className="topic-list">
-                  {theme.topics.map((topic) => (
-                    <li
-                      key={topic.id}
-                      className={
-                        completedTopics.has(topic.id)
-                          ? "topic-completed"
-                          : "topic-pending"
-                      }
-                    >
-                      <Link
-                        to={`/topic/${topic.id}/tasks`}
-                        onClick={() =>
-                          logUserClick(auth.currentUser?.uid, {
-                            type: "topic_click",
-                            target: topic.id,
-                            metadata: { name: topic.name },
-                          })
+                {theme.topics.length === 0 ? (
+                  <p className="empty-topics">No topics available</p>
+                ) : (
+                  <ul className="topic-list">
+                    {theme.topics.map((topic) => (
+                      <li
+                        key={topic.id}
+                        className={
+                          completedTopics.has(topic.id)
+                            ? "topic-completed"
+                            : "topic-pending"
                         }
                       >
-                        {topic.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
+                        <Link
+                          to={`/topic/${topic.id}/tasks`}
+                          className="topic-link"
+                          onClick={() =>
+                            logUserClick(auth.currentUser?.uid, {
+                              type: "topic_click",
+                              target: topic.id,
+                              metadata: { name: topic.name },
+                            })
+                          }
+                          style={{ display: "block", width: "100%" }}
+                        >
+                          {topic.name}
+                          {isThemeComing && (
+                            <span className="coming-soon-badge">Coming soon</span>
+                          )}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

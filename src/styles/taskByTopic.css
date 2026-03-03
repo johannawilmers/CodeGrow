@@ -24,6 +24,17 @@
   margin-bottom: 0.5rem;
 }
 
+#taskByTopic .topic-description {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+#taskByTopic .topic-description strong {
+  color: rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
 /* =========================
    TASK LIST
 ========================= */
@@ -81,6 +92,31 @@
 #taskByTopic .completed-task {
   position: relative; /* needed for absolute positioning of ::after */
   background-color: #dbf4e4;
+}
+
+/* =========================
+   STARTED BUT INCORRECT
+========================= */
+
+#taskByTopic .started-incorrect {
+  position: relative; /* anchor the ::after X inside the list item */
+  background-color: var(--error-main);
+  border-color: var(--error-dark);
+}
+
+#taskByTopic .started-incorrect a {
+  color: var(--error-dark);
+}
+#taskByTopic .started-incorrect::after {
+  content: "✗";
+  position: absolute;
+  top: 50%;
+  right: 1.2rem; /* same as padding */
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: var(--error-dark);
+  pointer-events: none; /* so it doesn't interfere with clicks */
+
 }
 
 #taskByTopic .completed-task::after {

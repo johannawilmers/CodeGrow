@@ -54,23 +54,24 @@
   text-decoration: none;
   display: block;
   width: 100%;
+  padding: 1rem 1.5rem;
 }
+
 
 
 
 
 .topic-completed {
-  background-color: var(--success-dark); /* Green */
+  background-color: var(--success-light); /* Green */
 }
 
 .topic-pending {
- background-color: var(--success-light);
+ background-color: var(--topic-incompleted); 
 }
 
 /* Keep the rest of your styling such as padding, border-radius, etc. */
 .topic-completed,
 .topic-pending {
-  padding: 1rem 1.5rem;
   border-radius: 30px;
   font-weight: bold;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
@@ -78,17 +79,26 @@
   white-space: nowrap;
   cursor: pointer;
   flex-shrink: 0;
- 
 }
 
+
 .topic-completed:hover {
-  background-color: var(--success-dark); /* Darker green */
+  background-color: var(--success-main); /* Darker green */
 }
 
 .topic-pending:hover {
-  background-color: var(--success-dark); /* Darker gray */
+  background-color: var(--success-light); /* Darker gray */
 }
 
+.coming-soon-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-weight: normal;
+}
 
 
 
