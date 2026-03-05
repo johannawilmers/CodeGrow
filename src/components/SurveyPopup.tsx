@@ -1,5 +1,6 @@
 import React from "react";
 import "../styles/surveyPopup.css";
+import { logUserClick } from "../utils/clickLogger";
 
 interface Props {
   onClose: () => void;
@@ -24,15 +25,26 @@ const SurveyPopup: React.FC<Props> = ({ onClose, userId }) => {
         </p>
 
         <p>
-          <a
-            href="https://forms.office.com/Pages/ResponsePage.aspx?id=cgahCS-CZ0SluluzdZZ8BZ_gZpSo7_dPng7lyyEl-QpUQzBGSFdXREk3RlhaQTdIWEFJQUM1QzlZOC4u"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => {
+              logUserClick(userId, { type: "survey_link_click", target: "survey_form" });
+              window.open("https://forms.office.com/Pages/ResponsePage.aspx?id=cgahCS-CZ0SluluzdZZ8BZ_gZpSo7_dPng7lyyEl-QpUQzBGSFdXREk3RlhaQTdIWEFJQUM1QzlZOC4u", "_blank");
+            }}
           >
             Gå til undersøkelsen
-          </a>
+          </button>
         </p>
-        <button onClick={onClose}>Jeg har fullført undersøkelsen, og vil starte å kode!</button>
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            logUserClick(userId, { type: "survey_close", target: "survey_popup" });
+            onClose();
+          }}
+          style={{ cursor: "pointer", textDecoration: "underline", color: "var(--primary-main)" }}
+        >
+          Jeg har fullført undersøkelsen, og vil starte å kode!
+        </a>
       </div>
     </div>
   );

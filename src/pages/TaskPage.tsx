@@ -388,8 +388,8 @@ const TaskPage = () => {
 
         <h1>{taskName}</h1>
         {taskDescription && <p>{taskDescription}</p>}
-
         <h2>Java Code</h2>
+        <p>Tips: Hvis du har problemer med innhopp eller formatering, kan det være lurt å løse oppgaven i VS Code først og deretter kopiere den inn.</p>
         <textarea
           value={code}
           onChange={(e) => setCode(e.target.value)}
