@@ -41,6 +41,9 @@ const MyPage: React.FC = () => {
           <p>
             <strong>User ID:</strong> {user.uid}
           </p>
+          <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=cgahCS-CZ0SluluzdZZ8BZ_gZpSo7_dPng7lyyEl-QpUQzBGSFdXREk3RlhaQTdIWEFJQUM1QzlZOC4u" target="_blank" rel="noopener noreferrer">
+            Lenke til introduksjonsundersøkelse
+          </a>
         </div>
       </div>
   
