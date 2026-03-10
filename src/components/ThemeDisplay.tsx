@@ -102,7 +102,7 @@ const ThemesOverview = () => {
   if (error) return <p>Error: {error}</p>;
 
   // themes that should show their topics as coming soon (1-based)
-  const comingSoonThemeNumbers = new Set([4,9,10,11,12,13,14,15, 16]);
+  const comingSoonThemeNumbers = new Set([12,13,14,15, 16]);
 
   return (
     <div >

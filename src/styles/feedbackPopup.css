@@ -5,7 +5,7 @@
 .feedback-popup {
   position: fixed;
   bottom: 20px;
-  left: 20px; /* Small gap from the left edge */
+  right: 20px; /* Small gap from the left edge */
   width: 200px; /* Adjust width as needed */
   z-index: 1000; /* High z-index to stay on top */
   background: rgba(255, 255, 255, 0.95);
@@ -16,13 +16,13 @@
 }
 
 .feedback-content h2 {
-  font-size: 1.2rem;
+  font-size: 0.8rem;
   margin-bottom: 20px;
   color: var(--primary-main);
 }
 
 .feedback-content p {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   line-height: 1.4;
   margin-bottom: 0.5rem;
 }
