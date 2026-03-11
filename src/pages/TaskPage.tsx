@@ -185,6 +185,12 @@ const TaskPage = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
 
+  const normalizeOutputForComparison = (value: string) =>
+    value
+      .replace(/\r\n/g, "\n")
+      .replace(/\s+/g, " ")
+      .trim();
+
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
@@ -301,7 +307,11 @@ const TaskPage = () => {
       const user = auth.currentUser;
       if (!user) return;
 
-      const isCorrect = trimmedOutput === expectedOutput.trim();
+      const actualOutput = normalizeOutputForComparison(data.output || "");
+      const normalizedExpectedOutput = normalizeOutputForComparison(
+        expectedOutput || ""
+      );
+      const isCorrect = actualOutput === normalizedExpectedOutput;
       const userTaskRef = doc(db, "users", user.uid, "tasks", taskId);
       const snap = await getDoc(userTaskRef);
       const wasCompleted = snap.exists() && snap.data()?.completed === true;
