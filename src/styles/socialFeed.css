@@ -1,0 +1,254 @@
+.social-page {
+  max-width: 760px;
+}
+
+.social-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.post-overlay-backdrop {
+  position: fixed;
+  top: 96px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem 1rem 2rem;
+  overflow-y: auto;
+  z-index: 1001;
+}
+
+.post-overlay-panel {
+  width: 100%;
+  max-width: 620px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e4e7ec;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  padding: 1rem 1.25rem;
+}
+
+.post-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.post-overlay-header h3 {
+  margin: 0;
+}
+
+.post-overlay-close {
+  background: transparent;
+  box-shadow: none;
+  color: #334155;
+  font-size: 1rem;
+  padding: 0.35rem 0.55rem;
+}
+
+.post-overlay-close:hover {
+  background: #f1f5f9;
+  transform: none;
+  box-shadow: none;
+}
+
+.post-form {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  text-align: left;
+}
+
+.post-form h3 {
+  margin: 0 0 0.75rem;
+}
+
+.post-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-form-row input,
+.post-form-row select,
+.post-form-row textarea {
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.post-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.post-cancel-btn {
+  background: #94a3b8;
+}
+
+.post-cancel-btn:hover {
+  background: #64748b;
+}
+
+.post-anonymous-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.post-form-error {
+  margin: 0 0 0.75rem;
+  color: var(--error-main);
+}
+
+.social-feed {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.post-card {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  text-align: left;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.post-author {
+  color: var(--text-primary);
+}
+
+.post-date {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.post-content {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.post-topic-line {
+  margin: 0 0 0.65rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.post-tag {
+  background: #edf2ff;
+  border: 1px solid #dbe4ff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.post-footer {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.post-action-btn {
+  background: #e2e8f0;
+  color: #334155;
+  box-shadow: none;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.post-action-btn:hover {
+  background: #cbd5e1;
+  box-shadow: none;
+  transform: none;
+}
+
+.post-action-btn.active {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.post-comments-section {
+  margin-top: 0.85rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.85rem;
+}
+
+.post-comment-form {
+  display: flex;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-comment-form input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+
+.post-comment-form button {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.post-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.post-comment-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+}
+
+.post-comment-item p {
+  margin: 0.25rem 0 0;
+}
+
+.post-comment-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.post-no-comments {
+  margin: 0;
+  color: #64748b;
+}
