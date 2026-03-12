@@ -18,6 +18,7 @@ export type SocialPost = {
   userId: string;
   nickname: string;
   isAnonymous: boolean;
+  title: string;
   theme: string;
   topic: string;
   content: string;
@@ -135,6 +136,8 @@ const Post = ({ post }: PostProps) => {
         <strong className="post-author">{authorLabel}</strong>
         <span className="post-date">{formatCreatedAt(post.createdAt)}</span>
       </header>
+
+      <h3 className="post-title">{post.title || "Untitled post"}</h3>
 
       <p className="post-topic-line">
         <span className="post-tag">Emne: {post.theme || "General"}</span>

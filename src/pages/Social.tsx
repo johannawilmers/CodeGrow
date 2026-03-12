@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import Post, { type SocialPost } from "../components/Post.tsx";
 import CreatePostOverlay from "../components/CreatePostOverlay.tsx";
-import { db } from "../firebase.ts";
+import { db } from "../firebase";
 import "../styles/socialFeed.css";
 
 const toDateFromUnknown = (value: unknown): Date | null => {
@@ -49,7 +49,10 @@ const toPost = (id: string, data: DocumentData): SocialPost | null => {
 
   const userId = typeof data.userId === "string" ? data.userId : "";
   const isAnonymous = data.isAnonymous === true;
-  const title = typeof data.title === "string" ? data.title : "";
+  const title =
+    typeof data.title === "string" && data.title.trim()
+      ? data.title.trim()
+      : "";
   const theme = typeof data.theme === "string" ? data.theme : "";
   const topic = typeof data.topic === "string" ? data.topic : "";
   const likesCount = typeof data.likesCount === "number" ? data.likesCount : 0;
@@ -71,7 +74,7 @@ const toPost = (id: string, data: DocumentData): SocialPost | null => {
   };
 };
 
-const Forum = () => {
+const Social = () => {
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +88,7 @@ const Forum = () => {
       const authorLabel = post.isAnonymous ? "anonymous" : post.nickname.toLowerCase();
       return (
         authorLabel.includes(q) ||
+        post.title.toLowerCase().includes(q) ||
         post.theme.toLowerCase().includes(q) ||
         post.topic.toLowerCase().includes(q) ||
         post.content.toLowerCase().includes(q)
@@ -117,28 +121,28 @@ const Forum = () => {
 
   return (
     <div className="main-content social-page">
-      <h1>Forum</h1>
+      <h1>Social</h1>
 
       <div className="social-actions">
         <input
           className="social-search"
           type="search"
-          placeholder="Søk etter tema, emne eller innhold..."
+          placeholder="Search posts by author, theme, topic or content..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <button type="button" onClick={() => setShowCreateOverlay(true)}>
-          Opprett innlegg
+          Create post
         </button>
       </div>
 
-      {loading && <p>Laster innlegg...</p>}
+      {loading && <p>Loading posts...</p>}
       {error && <p>{error}</p>}
 
-      {!loading && !error && posts.length === 0 && <p>Ingen innlegg enda.</p>}
+      {!loading && !error && posts.length === 0 && <p>No posts yet.</p>}
 
       {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
-        <p>Ingen innlegg matcher søket ditt.</p>
+        <p>No posts match your search.</p>
       )}
 
       {!loading && !error && filteredPosts.length > 0 && (
@@ -157,4 +161,4 @@ const Forum = () => {
   );
 };
 
-export default Forum;
+export default Social;

@@ -23,6 +23,7 @@ type PostData = {
   userId: string;
   nickname: string;
   isAnonymous: boolean;
+  title: string;
   theme: string;
   topic: string;
   content: string;
@@ -126,6 +127,10 @@ const PostPage = () => {
               ? data.nickname.trim()
               : "Anonymous",
           isAnonymous: data.isAnonymous === true,
+          title:
+            typeof data.title === "string" && data.title.trim()
+              ? data.title.trim()
+              : "",
           theme: typeof data.theme === "string" ? data.theme : "",
           topic: typeof data.topic === "string" ? data.topic : "",
           content: typeof data.content === "string" ? data.content : "",
@@ -262,6 +267,8 @@ const PostPage = () => {
           <strong className="post-author">{authorLabel}</strong>
           <span className="post-date">{formatDate(post.createdAt)}</span>
         </header>
+
+        <h2 className="post-title">{post.title || "Untitled post"}</h2>
 
         <p className="post-topic-line">
           <span className="post-tag">Theme: {post.theme || "General"}</span>

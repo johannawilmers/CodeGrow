@@ -69,6 +69,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
   const [topics, setTopics] = useState<TopicOption[]>([]);
   const [selectedThemeId, setSelectedThemeId] = useState("");
   const [selectedTopicId, setSelectedTopicId] = useState("");
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [customTopic, setCustomTopic] = useState("");
@@ -154,6 +155,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
 
   const resetAndClose = () => {
     setError(null);
+    setTitle("");
     setContent("");
     setIsAnonymous(false);
     setCustomTopic("");
@@ -173,6 +175,12 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
     const trimmedContent = content.trim();
     if (!trimmedContent) {
       setError("Post content cannot be empty.");
+      return;
+    }
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setError("Post title cannot be empty.");
       return;
     }
 
@@ -224,6 +232,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
         userId: user.uid,
         nickname,
         isAnonymous,
+        title: trimmedTitle,
         theme: selectedTheme.name,
         topic: isOtherTheme ? customTopic.trim() : selectedTopic!.name,
         content: trimmedContent,
@@ -259,25 +268,38 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
     <div className="post-overlay-backdrop" onClick={resetAndClose}>
       <div className="post-overlay-panel" onClick={(e) => e.stopPropagation()}>
         <div className="post-overlay-header">
-          <h3>Create post</h3>
+          <h3>Opprett innlegg</h3>
           <button type="button" className="post-overlay-close" onClick={resetAndClose}>
             ✕
           </button>
         </div>
 
         {loadingData ? (
-          <p>Loading themes/topics...</p>
+          <p>Laster...</p>
         ) : (
           <form className="post-form" onSubmit={handleSubmit}>
             <div className="post-form-row">
-              <label htmlFor="post-theme">Theme</label>
+              <label htmlFor="post-title">Tittel</label>
+              <input
+                id="post-title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Legg til en kort tittel..."
+                maxLength={120}
+                required
+              />
+            </div>
+
+            <div className="post-form-row">
+              <label htmlFor="post-theme">Emne</label>
               <select
                 id="post-theme"
                 value={selectedThemeId}
                 onChange={(e) => setSelectedThemeId(e.target.value)}
                 required
               >
-                {themes.length === 0 && <option value="">No themes available</option>}
+                {themes.length === 0 && <option value="">Ingen emner tilgjengelig</option>}
                 {themes.map((theme) => (
                   <option key={theme.id} value={theme.id}>
                     {theme.name}
@@ -287,7 +309,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
             </div>
 
             <div className="post-form-row">
-              <label htmlFor="post-topic">Topic</label>
+              <label htmlFor="post-topic">Tema</label>
               {selectedThemeId === OTHER_THEME_ID ? (
                 <input
                   id="post-topic"
@@ -318,13 +340,13 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
             </div>
 
             <div className="post-form-row">
-              <label htmlFor="post-content">Content</label>
+              <label htmlFor="post-content">Innhold</label>
               <textarea
                 id="post-content"
                 rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Share your thought or question..."
+                placeholder="Del din mening eller spørsmål..."
                 required
               />
             </div>
@@ -335,14 +357,14 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
                 checked={isAnonymous}
                 onChange={(e) => setIsAnonymous(e.target.checked)}
               />
-              Post anonymously
+              Post anonymt
             </label>
 
             {error && <p className="post-form-error">{error}</p>}
 
             <div className="post-form-actions">
               <button type="button" className="post-cancel-btn" onClick={resetAndClose}>
-                Cancel
+                Lukk
               </button>
               <button type="submit" disabled={posting || themes.length === 0 || (selectedThemeId !== OTHER_THEME_ID && filteredTopics.length === 0)}>
                 {posting ? "Posting..." : "Post"}
