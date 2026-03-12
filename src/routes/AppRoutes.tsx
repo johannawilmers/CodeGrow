@@ -5,6 +5,7 @@ import NotFound from "../pages/NotFound";
 import MyPage from "../pages/MyPage";
 import Social from "../pages/Social";
 import TaskPage from "../pages/TaskPage";
+import PostPage from "../pages/PostPage";
 
 import TasksByTopicPage from "../pages/TaskByTopic";
 import ThemeTopicManager from "../pages/ThemeTopicManager";
@@ -18,6 +19,7 @@ const AppRoutes = () => {
           <Route path="/" element={<Home />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/social" element={<Social />} />
+          <Route path="/social/:postId" element={<PostPage />} />
           <Route path="/task" element={<TaskPage />} />
      
           <Route path="/topic/:topicId/tasks" element={<TasksByTopicPage />} />

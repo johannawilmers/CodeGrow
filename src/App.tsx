@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import SurveyPopup from "./components/SurveyPopup";
 
 import { validateStreak } from "./utils/validateStreak";
+import PostPage from "./pages/PostPage";
 
 function App() {
   const [showSurvey, setShowSurvey] = useState(false);
@@ -90,6 +91,7 @@ function App() {
             path="/topic/:topicId/edit"
             element={<TopicEditor />}
           />
+          <Route path="/social/:postId" element={<PostPage />} />
         </Routes>
       </Login>
     </BrowserRouter>
