@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   collection,
   onSnapshot,
@@ -74,6 +74,21 @@ const Social = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateOverlay, setShowCreateOverlay] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredPosts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return posts;
+    return posts.filter((post) => {
+      const authorLabel = post.isAnonymous ? "anonymous" : post.nickname.toLowerCase();
+      return (
+        authorLabel.includes(q) ||
+        post.theme.toLowerCase().includes(q) ||
+        post.topic.toLowerCase().includes(q) ||
+        post.content.toLowerCase().includes(q)
+      );
+    });
+  }, [posts, searchQuery]);
 
   useEffect(() => {
     const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
@@ -103,6 +118,13 @@ const Social = () => {
       <h1>Social</h1>
 
       <div className="social-actions">
+        <input
+          className="social-search"
+          type="search"
+          placeholder="Search posts by author, theme, topic or content..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
         <button type="button" onClick={() => setShowCreateOverlay(true)}>
           Create post
         </button>
@@ -113,9 +135,13 @@ const Social = () => {
 
       {!loading && !error && posts.length === 0 && <p>No posts yet.</p>}
 
-      {!loading && !error && posts.length > 0 && (
+      {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
+        <p>No posts match your search.</p>
+      )}
+
+      {!loading && !error && filteredPosts.length > 0 && (
         <div className="social-feed">
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <Post key={post.id} post={post} />
           ))}
         </div>

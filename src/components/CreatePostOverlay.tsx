@@ -61,6 +61,9 @@ const resolveThemeId = (value: unknown): string | null => {
   return null;
 };
 
+const OTHER_THEME_ID = "__other__";
+const OTHER_THEME: ThemeOption = { id: OTHER_THEME_ID, name: "Andre spørsmål", order: Number.MAX_SAFE_INTEGER };
+
 const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProps) => {
   const [themes, setThemes] = useState<ThemeOption[]>([]);
   const [topics, setTopics] = useState<TopicOption[]>([]);
@@ -68,6 +71,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
   const [selectedTopicId, setSelectedTopicId] = useState("");
   const [content, setContent] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [customTopic, setCustomTopic] = useState("");
   const [loadingData, setLoadingData] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,11 +116,12 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
           .filter((topic): topic is TopicOption => topic !== null)
           .sort((a, b) => a.order - b.order);
 
-        setThemes(nextThemes);
+        const allThemes = [...nextThemes, OTHER_THEME];
+        setThemes(allThemes);
         setTopics(nextTopics);
 
-        if (nextThemes.length > 0 && !selectedThemeId) {
-          setSelectedThemeId(nextThemes[0].id);
+        if (allThemes.length > 0 && !selectedThemeId) {
+          setSelectedThemeId(allThemes[0].id);
         }
       } catch {
         setError("Failed to load themes/topics.");
@@ -151,6 +156,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
     setError(null);
     setContent("");
     setIsAnonymous(false);
+    setCustomTopic("");
     onClose();
   };
 
@@ -170,16 +176,35 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
       return;
     }
 
-    if (!selectedThemeId || !selectedTopicId) {
-      setError("Please pick both theme and topic.");
+    const isOtherTheme = selectedThemeId === OTHER_THEME_ID;
+
+    if (!selectedThemeId) {
+      setError("Please pick a theme.");
+      return;
+    }
+
+    if (isOtherTheme) {
+      if (!customTopic.trim()) {
+        setError("Please describe your topic.");
+        return;
+      }
+    } else if (!selectedTopicId) {
+      setError("Please pick a topic.");
       return;
     }
 
     const selectedTheme = themes.find((theme) => theme.id === selectedThemeId);
-    const selectedTopic = topics.find((topic) => topic.id === selectedTopicId);
+    const selectedTopic = isOtherTheme
+      ? null
+      : topics.find((topic) => topic.id === selectedTopicId);
 
-    if (!selectedTheme || !selectedTopic) {
-      setError("Invalid theme/topic selection.");
+    if (!selectedTheme) {
+      setError("Invalid theme selection.");
+      return;
+    }
+
+    if (!isOtherTheme && !selectedTopic) {
+      setError("Invalid topic selection.");
       return;
     }
 
@@ -200,7 +225,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
         nickname,
         isAnonymous,
         theme: selectedTheme.name,
-        topic: selectedTopic.name,
+        topic: isOtherTheme ? customTopic.trim() : selectedTopic!.name,
         content: trimmedContent,
         likesCount: 0,
         commentsCount: 0,
@@ -263,22 +288,33 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
 
             <div className="post-form-row">
               <label htmlFor="post-topic">Topic</label>
-              <select
-                id="post-topic"
-                value={selectedTopicId}
-                onChange={(e) => setSelectedTopicId(e.target.value)}
-                required
-                disabled={filteredTopics.length === 0}
-              >
-                {filteredTopics.length === 0 && (
-                  <option value="">No topics for selected theme</option>
-                )}
-                {filteredTopics.map((topic) => (
-                  <option key={topic.id} value={topic.id}>
-                    {topic.name}
-                  </option>
-                ))}
-              </select>
+              {selectedThemeId === OTHER_THEME_ID ? (
+                <input
+                  id="post-topic"
+                  type="text"
+                  value={customTopic}
+                  onChange={(e) => setCustomTopic(e.target.value)}
+                  placeholder="Describe your topic or question..."
+                  required
+                />
+              ) : (
+                <select
+                  id="post-topic"
+                  value={selectedTopicId}
+                  onChange={(e) => setSelectedTopicId(e.target.value)}
+                  required
+                  disabled={filteredTopics.length === 0}
+                >
+                  {filteredTopics.length === 0 && (
+                    <option value="">No topics for selected theme</option>
+                  )}
+                  {filteredTopics.map((topic) => (
+                    <option key={topic.id} value={topic.id}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="post-form-row">
@@ -308,7 +344,7 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
               <button type="button" className="post-cancel-btn" onClick={resetAndClose}>
                 Cancel
               </button>
-              <button type="submit" disabled={posting || filteredTopics.length === 0 || themes.length === 0}>
+              <button type="submit" disabled={posting || themes.length === 0 || (selectedThemeId !== OTHER_THEME_ID && filteredTopics.length === 0)}>
                 {posting ? "Posting..." : "Post"}
               </button>
             </div>

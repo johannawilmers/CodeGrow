@@ -150,9 +150,9 @@ const Post = ({ post }: PostProps) => {
           onClick={handleToggleLike}
           disabled={liking}
         >
-          {likedByCurrentUser ? "❤️ Liked" : "🤍 Like"} ({post.likesCount})
+          {likedByCurrentUser ? "❤️" : "🤍"} ({post.likesCount})
         </button>
-        <span className="post-comment-count">💬 {post.commentsCount} comments</span>
+        <span className="post-comment-count">💬 {post.commentsCount}</span>
       </footer>
 
       {interactionError && <p className="post-form-error">{interactionError}</p>}
