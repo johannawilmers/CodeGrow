@@ -3,7 +3,7 @@ import MainLayout from "../layouts/MainLayout";
 import Home from "../pages/Home";
 import NotFound from "../pages/NotFound";
 import MyPage from "../pages/MyPage";
-import Social from "../pages/Social";
+import Social from "../pages/Forum";
 import TaskPage from "../pages/TaskPage";
 import PostPage from "../pages/PostPage";
 

@@ -8,7 +8,7 @@ import {
 } from "firebase/firestore";
 import Post, { type SocialPost } from "../components/Post.tsx";
 import CreatePostOverlay from "../components/CreatePostOverlay.tsx";
-import { db } from "../firebase";
+import { db } from "../firebase.ts";
 import "../styles/socialFeed.css";
 
 const toDateFromUnknown = (value: unknown): Date | null => {
@@ -69,7 +69,7 @@ const toPost = (id: string, data: DocumentData): SocialPost | null => {
   };
 };
 
-const Social = () => {
+const Forum = () => {
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,28 +115,28 @@ const Social = () => {
 
   return (
     <div className="main-content social-page">
-      <h1>Social</h1>
+      <h1>Forum</h1>
 
       <div className="social-actions">
         <input
           className="social-search"
           type="search"
-          placeholder="Search posts by author, theme, topic or content..."
+          placeholder="Søk etter tema, emne eller innhold..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <button type="button" onClick={() => setShowCreateOverlay(true)}>
-          Create post
+          Opprett innlegg
         </button>
       </div>
 
-      {loading && <p>Loading posts...</p>}
+      {loading && <p>Laster innlegg...</p>}
       {error && <p>{error}</p>}
 
-      {!loading && !error && posts.length === 0 && <p>No posts yet.</p>}
+      {!loading && !error && posts.length === 0 && <p>Ingen innlegg enda.</p>}
 
       {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
-        <p>No posts match your search.</p>
+        <p>Ingen innlegg matcher søket ditt.</p>
       )}
 
       {!loading && !error && filteredPosts.length > 0 && (
@@ -155,4 +155,4 @@ const Social = () => {
   );
 };
 
-export default Social;
+export default Forum;

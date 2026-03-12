@@ -6,7 +6,7 @@ import { db } from "./firebase";
 import NavBar from "./components/Navbar";
 import Home from "./pages/Home";
 import MyPage from "./pages/MyPage";
-import Social from "./pages/Social";
+import Social from "./pages/Forum";
 import TaskPage from "./pages/TaskPage";
 import Login from "./components/Login";
 import TasksByTopicPage from "./pages/TaskByTopic";

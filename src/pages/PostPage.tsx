@@ -251,10 +251,10 @@ const PostPage = () => {
     <div className="main-content social-page">
       <button
         type="button"
-        className="post-back-btn"
+        className="back-btn"
         onClick={() => navigate("/social")}
       >
-        ← Back to feed
+        ← Tilbake
       </button>
 
       <article className="post-card post-card--full">
@@ -277,23 +277,23 @@ const PostPage = () => {
             onClick={handleToggleLike}
             disabled={liking}
           >
-            {likedByCurrentUser ? "❤️ Liked" : "🤍 Like"} ({post.likesCount})
+            {likedByCurrentUser ? "❤️" : "🤍"} ({post.likesCount})
           </button>
-          <span className="post-comment-count">💬 {post.commentsCount} comments</span>
+          <span className="post-comment-count">💬 {post.commentsCount}</span>
         </footer>
 
         {actionError && <p className="post-form-error">{actionError}</p>}
       </article>
 
       <section className="post-comments-section post-comments-section--page">
-        <h3>Comments</h3>
+        <h3>Kommentarer</h3>
 
         <div className="post-comment-form">
           <input
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
+            placeholder="Skriv en kommentar..."
             maxLength={500}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) handleAddComment();
@@ -310,7 +310,7 @@ const PostPage = () => {
 
         <div className="post-comments-list">
           {comments.length === 0 ? (
-            <p className="post-no-comments">No comments yet. Be the first!</p>
+            <p className="post-no-comments">Ingen kommentarer enda, bli den første!</p>
           ) : (
             comments.map((comment) => (
               <div key={comment.id} className="post-comment-item">

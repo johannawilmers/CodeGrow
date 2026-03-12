@@ -137,8 +137,8 @@ const Post = ({ post }: PostProps) => {
       </header>
 
       <p className="post-topic-line">
-        <span className="post-tag">Theme: {post.theme || "General"}</span>
-        <span className="post-tag">Topic: {post.topic || "General"}</span>
+        <span className="post-tag">Emne: {post.theme || "General"}</span>
+        <span className="post-tag">Tema: {post.topic || "General"}</span>
       </p>
 
       <p className="post-content">{post.content}</p>

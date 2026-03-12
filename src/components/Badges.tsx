@@ -37,11 +37,11 @@ export const Badges: React.FC = () => {
     fetchBadges();
   }, []);
 
-  if (loading) return <p>Loading rewards...</p>;
+  if (loading) return <p>Laster belønninger...</p>;
 
   return (
     <div className="badges-page">
-      <h1>🏆 Rewards</h1>
+      <h1>🏆 Belønninger</h1>
 
       <div className="badges-grid">
         {BADGES.map((badge) => {
