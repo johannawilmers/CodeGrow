@@ -137,7 +137,7 @@ const Post = ({ post }: PostProps) => {
         <span className="post-date">{formatCreatedAt(post.createdAt)}</span>
       </header>
 
-      <h3 className="post-title">{post.title || "Untitled post"}</h3>
+      <h3 className="post-title">{post.title || "Innlegg uten navn"}</h3>
 
       <p className="post-topic-line">
         <span className="post-tag">Emne: {post.theme || "General"}</span>

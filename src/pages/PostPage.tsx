@@ -268,7 +268,7 @@ const PostPage = () => {
           <span className="post-date">{formatDate(post.createdAt)}</span>
         </header>
 
-        <h2 className="post-title">{post.title || "Untitled post"}</h2>
+        <h2 className="post-title">{post.title || "Innlegg uten navn"}</h2>
 
         <p className="post-topic-line">
           <span className="post-tag">Theme: {post.theme || "General"}</span>
