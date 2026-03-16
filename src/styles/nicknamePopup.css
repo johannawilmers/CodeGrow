@@ -1,0 +1,73 @@
+.nickname-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1100;
+}
+
+.nickname-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+
+.nickname-modal h3 {
+  margin: 0 0 0.5rem;
+}
+
+.nickname-modal p {
+  margin: 0 0 0.75rem;
+}
+
+.nickname-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.nickname-form input {
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+.nickname-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.nickname-cancel {
+  background: #94a3b8;
+}
+
+.nickname-cancel:hover {
+  background: #64748b;
+}
+
+.mypage-nickname-card {
+  border: 1px solid #e4e7ec;
+  border-radius: 12px;
+  padding: 0.9rem;
+  margin: 0.85rem 0 1.25rem;
+  background: #fff;
+  text-align: left;
+}
+
+.mypage-nickname-card p {
+  margin: 0 0 0.65rem;
+}

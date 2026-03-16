@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   collection,
+  doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
+  setDoc,
   type DocumentData,
 } from "firebase/firestore";
 import Post, { type SocialPost } from "../components/Post.tsx";
 import CreatePostOverlay from "../components/CreatePostOverlay.tsx";
-import { db } from "../firebase.ts";
+import NicknamePopup from "../components/NicknamePopup.tsx";
+import { auth, db } from "../firebase.ts";
 import "../styles/socialFeed.css";
 
 const toDateFromUnknown = (value: unknown): Date | null => {
@@ -77,6 +82,10 @@ const Forum = () => {
   const [error, setError] = useState<string | null>(null);
   const [showCreateOverlay, setShowCreateOverlay] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [showNicknamePopup, setShowNicknamePopup] = useState(false);
+
+  const currentUser = auth.currentUser;
 
   const filteredPosts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -91,6 +100,51 @@ const Forum = () => {
       );
     });
   }, [posts, searchQuery]);
+
+  useEffect(() => {
+    const loadNickname = async () => {
+      if (!currentUser) {
+        setNickname("");
+        setShowNicknamePopup(false);
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        const storedNickname =
+          userDoc.exists() && typeof userDoc.data().nickname === "string"
+            ? userDoc.data().nickname.trim()
+            : "";
+
+        setNickname(storedNickname);
+        setShowNicknamePopup(!storedNickname);
+      } catch {
+        setNickname("");
+        setShowNicknamePopup(true);
+      }
+    };
+
+    loadNickname();
+  }, [currentUser]);
+
+  const handleSaveNickname = async (nextNickname: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        nickname: nextNickname,
+        nicknameUpdatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    await user.updateProfile({ displayName: nextNickname });
+
+    setNickname(nextNickname);
+    setShowNicknamePopup(false);
+  };
 
   useEffect(() => {
     const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
@@ -118,6 +172,8 @@ const Forum = () => {
   return (
     <div className="main-content social-page">
       <h1>Forum</h1>
+
+      {nickname && <p>Nickname: <strong>{nickname}</strong></p>}
 
       <div className="social-actions">
         <input
@@ -152,6 +208,15 @@ const Forum = () => {
       <CreatePostOverlay
         isOpen={showCreateOverlay}
         onClose={() => setShowCreateOverlay(false)}
+      />
+
+      <NicknamePopup
+        isOpen={showNicknamePopup}
+        title="Sett kallenavn"
+        description="Sett et kallenavn før du bruker forumet. Du kan endre det senere på Min profil."
+        submitLabel="Lagre kallenavn"
+        allowClose={false}
+        onSubmit={handleSaveNickname}
       />
     </div>
   );
