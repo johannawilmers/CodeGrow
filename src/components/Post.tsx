@@ -146,11 +146,14 @@ const Post = ({ post }: PostProps) => {
 
       <p className="post-content">{post.content}</p>
 
-      <footer className="post-footer" onClick={(e) => e.stopPropagation()}>
+      <footer className="post-footer">
         <button
           type="button"
           className={`post-action-btn ${likedByCurrentUser ? "active" : ""}`}
-          onClick={handleToggleLike}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleToggleLike();
+          }}
           disabled={liking}
         >
           {likedByCurrentUser ? "❤️" : "🤍"} ({post.likesCount})

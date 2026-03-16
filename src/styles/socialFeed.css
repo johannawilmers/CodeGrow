@@ -258,6 +258,10 @@
   font-size: 0.9rem;
 }
 
+.back-btn {
+  margin-bottom: 1rem;
+}
+
 .post-back-btn {
   background: transparent;
   box-shadow: none;

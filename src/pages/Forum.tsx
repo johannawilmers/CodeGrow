@@ -173,7 +173,7 @@ const Forum = () => {
     <div className="main-content social-page">
       <h1>Forum</h1>
 
-      {nickname && <p>Nickname: <strong>{nickname}</strong></p>}
+      {nickname && <p>Kallenavn: <strong>{nickname}</strong></p>}
 
       <div className="social-actions">
         <input
