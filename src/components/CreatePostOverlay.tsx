@@ -8,6 +8,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/socialFeed.css";
 
 type ThemeOption = {
@@ -269,7 +270,18 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
       <div className="post-overlay-panel" onClick={(e) => e.stopPropagation()}>
         <div className="post-overlay-header">
           <h3>Opprett innlegg</h3>
-          <button type="button" className="post-overlay-close" onClick={resetAndClose}>
+          <button
+            type="button"
+            className="post-overlay-close"
+            onClick={() => {
+              void logUserClick(auth.currentUser?.uid, {
+                type: "forum_button_click",
+                target: "create_post_close_x",
+                metadata: { page: "forum" },
+              });
+              resetAndClose();
+            }}
+          >
             ✕
           </button>
         </div>
@@ -363,10 +375,31 @@ const CreatePostOverlay = ({ isOpen, onClose, onCreated }: CreatePostOverlayProp
             {error && <p className="post-form-error">{error}</p>}
 
             <div className="post-form-actions">
-              <button type="button" className="post-cancel-btn" onClick={resetAndClose}>
+              <button
+                type="button"
+                className="post-cancel-btn"
+                onClick={() => {
+                  void logUserClick(auth.currentUser?.uid, {
+                    type: "forum_button_click",
+                    target: "create_post_cancel",
+                    metadata: { page: "forum" },
+                  });
+                  resetAndClose();
+                }}
+              >
                 Lukk
               </button>
-              <button type="submit" disabled={posting || themes.length === 0 || (selectedThemeId !== OTHER_THEME_ID && filteredTopics.length === 0)}>
+              <button
+                type="submit"
+                onClick={() => {
+                  void logUserClick(auth.currentUser?.uid, {
+                    type: "forum_button_click",
+                    target: "create_post_submit",
+                    metadata: { page: "forum" },
+                  });
+                }}
+                disabled={posting || themes.length === 0 || (selectedThemeId !== OTHER_THEME_ID && filteredTopics.length === 0)}
+              >
                 {posting ? "Posting..." : "Post"}
               </button>
             </div>

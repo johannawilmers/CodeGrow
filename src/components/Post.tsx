@@ -11,6 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/socialFeed.css";
 
 export type SocialPost = {
@@ -130,7 +131,14 @@ const Post = ({ post }: PostProps) => {
   return (
     <article
       className="post-card post-card--clickable"
-      onClick={() => navigate(`/social/${post.id}`)}
+      onClick={() => {
+        void logUserClick(auth.currentUser?.uid, {
+          type: "forum_button_click",
+          target: "open_post",
+          metadata: { page: "forum", postId: post.id },
+        });
+        navigate(`/social/${post.id}`);
+      }}
     >
       <header className="post-header">
         <strong className="post-author">{authorLabel}</strong>
@@ -152,6 +160,11 @@ const Post = ({ post }: PostProps) => {
           className={`post-action-btn ${likedByCurrentUser ? "active" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
+            void logUserClick(auth.currentUser?.uid, {
+              type: "forum_button_click",
+              target: "post_like",
+              metadata: { page: "forum", postId: post.id },
+            });
             void handleToggleLike();
           }}
           disabled={liking}

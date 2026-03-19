@@ -14,6 +14,7 @@ import Post, { type SocialPost } from "../components/Post.tsx";
 import CreatePostOverlay from "../components/CreatePostOverlay.tsx";
 import NicknamePopup from "../components/NicknamePopup.tsx";
 import { auth, db } from "../firebase.ts";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/socialFeed.css";
 
 const toDateFromUnknown = (value: unknown): Date | null => {
@@ -132,6 +133,12 @@ const Forum = () => {
     const user = auth.currentUser;
     if (!user) return;
 
+    void logUserClick(user.uid, {
+      type: "forum_button_click",
+      target: "save_nickname",
+      metadata: { page: "forum" },
+    });
+
     await setDoc(
       doc(db, "users", user.uid),
       {
@@ -184,7 +191,17 @@ const Forum = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button type="button" onClick={() => setShowCreateOverlay(true)}>
+        <button
+          type="button"
+          onClick={() => {
+            void logUserClick(currentUser?.uid, {
+              type: "forum_button_click",
+              target: "open_create_post",
+              metadata: { page: "forum" },
+            });
+            setShowCreateOverlay(true);
+          }}
+        >
           Opprett innlegg
         </button>
       </div>

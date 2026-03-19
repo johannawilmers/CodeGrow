@@ -16,6 +16,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/socialFeed.css";
 
 type PostData = {
@@ -257,7 +258,14 @@ const PostPage = () => {
       <button
         type="button"
         className="back-btn"
-        onClick={() => navigate("/social")}
+        onClick={() => {
+          void logUserClick(auth.currentUser?.uid, {
+            type: "post_page_button_click",
+            target: "back_to_forum",
+            metadata: { page: "post", postId },
+          });
+          navigate("/social");
+        }}
       >
         ← Tilbake
       </button>
@@ -281,7 +289,14 @@ const PostPage = () => {
           <button
             type="button"
             className={`post-action-btn ${likedByCurrentUser ? "active" : ""}`}
-            onClick={handleToggleLike}
+            onClick={() => {
+              void logUserClick(auth.currentUser?.uid, {
+                type: "post_page_button_click",
+                target: "like_post",
+                metadata: { page: "post", postId },
+              });
+              void handleToggleLike();
+            }}
             disabled={liking}
           >
             {likedByCurrentUser ? "❤️" : "🤍"} ({post.likesCount})
@@ -308,7 +323,14 @@ const PostPage = () => {
           />
           <button
             type="button"
-            onClick={handleAddComment}
+            onClick={() => {
+              void logUserClick(auth.currentUser?.uid, {
+                type: "post_page_button_click",
+                target: "send_comment",
+                metadata: { page: "post", postId },
+              });
+              void handleAddComment();
+            }}
             disabled={commenting || !newComment.trim()}
           >
             {commenting ? "Sending..." : "Send"}
