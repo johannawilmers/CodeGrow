@@ -94,6 +94,7 @@ const Forum = () => {
       const authorLabel = post.isAnonymous ? "anonymous" : post.nickname.toLowerCase();
       return (
         authorLabel.includes(q) ||
+        post.title.toLowerCase().includes(q) ||
         post.theme.toLowerCase().includes(q) ||
         post.topic.toLowerCase().includes(q) ||
         post.content.toLowerCase().includes(q)
@@ -179,7 +180,7 @@ const Forum = () => {
         <input
           className="social-search"
           type="search"
-          placeholder="Søk etter tema, emne eller innhold..."
+          placeholder="Søk etter tittel, tema, emne eller innhold..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
