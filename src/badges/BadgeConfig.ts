@@ -39,7 +39,8 @@ export const BADGES: BadgeConfig[] = [
   { id: "tasks_10", title: "Task Enthusiast", description: "Fullfør 10 oppgaver", icon: "✔️", trigger: "TASKS_COMPLETED", value: 10 },
   { id: "tasks_20", title: "Task Pro", description: "Fullfør 20 oppgaver", icon: "✔️", trigger: "TASKS_COMPLETED", value: 20 },
   { id: "tasks_50", title: "Task Master", description: "Fullfør 50 oppgaver", icon: "✔️", trigger: "TASKS_COMPLETED", value: 50 },
-
+  { id: "tasks_100", title: "Task Legend", description: "Fullfør 100 oppgaver", icon: "✔️", trigger: "TASKS_COMPLETED", value: 100 },
+{ id: "tasks_200", title: "Task Virtuoso", description: "Fullfør 200 oppgaver", icon: "✔️", trigger: "TASKS_COMPLETED", value: 200 },
 //   // 📚 TOPICS
 //   { id: "first_topic", title: "Topic Newbie", description: "Complete your first topic", icon: "📚", trigger: "FIRST_TOPIC" },
 //   { id: "topics_3", title: "Topic Explorer", description: "Complete 3 topics", icon: "📚", trigger: "TOPICS_COMPLETED", value: 3 },
