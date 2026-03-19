@@ -6,6 +6,7 @@ import { auth } from "../firebase";
 import { db } from "../firebase";
 import Badges from "../components/Badges";
 import NicknamePopup from "../components/NicknamePopup";
+import { logUserClick } from "../utils/clickLogger";
 
 
 const MyPage: React.FC = () => {
@@ -41,6 +42,12 @@ const MyPage: React.FC = () => {
 
   const handleSaveNickname = async (nextNickname: string) => {
     if (!user) return;
+
+    void logUserClick(user.uid, {
+      type: "profile_button_click",
+      target: "save_nickname",
+      metadata: { page: "my_profile" },
+    });
 
     await setDoc(
       doc(db, "users", user.uid),
@@ -91,7 +98,17 @@ const MyPage: React.FC = () => {
               {loadingNickname ? "Laster..." : nickname || "Ikke satt"}
             </p>
             {nicknameError && <p className="post-form-error">{nicknameError}</p>}
-            <button type="button" onClick={() => setShowNicknamePopup(true)}>
+            <button
+              type="button"
+              onClick={() => {
+                void logUserClick(user.uid, {
+                  type: "profile_button_click",
+                  target: "open_nickname_editor",
+                  metadata: { page: "my_profile" },
+                });
+                setShowNicknamePopup(true);
+              }}
+            >
               {nickname ? "Endre kallenavn" : "Sett kallenavn"}
             </button>
           </div>
@@ -110,7 +127,14 @@ const MyPage: React.FC = () => {
         description="Dette navnet brukes når du poster og kommenterer i forumet."
         initialNickname={nickname}
         submitLabel="Lagre"
-        onClose={() => setShowNicknamePopup(false)}
+        onClose={() => {
+          void logUserClick(user.uid, {
+            type: "profile_button_click",
+            target: "close_nickname_editor",
+            metadata: { page: "my_profile" },
+          });
+          setShowNicknamePopup(false);
+        }}
         onSubmit={handleSaveNickname}
       />
      
