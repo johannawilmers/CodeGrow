@@ -1,21 +1,78 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth } from "../firebase";
+import { db } from "../firebase";
 import Badges from "../components/Badges";
-import Streak from "../components/Streak";
+import NicknamePopup from "../components/NicknamePopup";
+import { logUserClick } from "../utils/clickLogger";
+
 
 const MyPage: React.FC = () => {
   const [user] = useState<firebase.User | null>(auth.currentUser);
-  const [streak] = useState<number | null>(null);
+  const [nickname, setNickname] = useState("");
+  const [loadingNickname, setLoadingNickname] = useState(false);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
+  const [showNicknamePopup, setShowNicknamePopup] = useState(false);
+
+  useEffect(() => {
+    const loadNickname = async () => {
+      if (!user) return;
+
+      setLoadingNickname(true);
+      setNicknameError(null);
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const storedNickname =
+          userDoc.exists() && typeof userDoc.data().nickname === "string"
+            ? userDoc.data().nickname.trim()
+            : "";
+        setNickname(storedNickname);
+      } catch {
+        setNicknameError("Kunne ikke hente nickname.");
+      } finally {
+        setLoadingNickname(false);
+      }
+    };
+
+    loadNickname();
+  }, [user]);
+
+  const handleSaveNickname = async (nextNickname: string) => {
+    if (!user) return;
+
+    void logUserClick(user.uid, {
+      type: "profile_button_click",
+      target: "save_nickname",
+      metadata: { page: "my_profile" },
+    });
+
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        nickname: nextNickname,
+        nicknameUpdatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    await user.updateProfile({ displayName: nextNickname });
+
+    setNickname(nextNickname);
+    setShowNicknamePopup(false);
+    setNicknameError(null);
+  };
+
 
  
 
   if (!user) {
     return (
       <div className="main-content">
-        <h1>My Profile</h1>
-        <p>No user is signed in.</p>
+        <h1>Min profil</h1>
+        <p>Ingen bruker er innlogget.</p>
       </div>
     );
   }
@@ -25,22 +82,37 @@ const MyPage: React.FC = () => {
       <div >
       
         <div>
-          <h1>My Profile</h1>
-         
-         <Streak streak={streak} />
+          <h1>Min profil</h1>
+    
+          
           <p>
-            
-            <strong>Providers:</strong>{" "}
-            {user.providerData && user.providerData.length > 0
-              ? user.providerData.map((p) => p?.providerId).join(", ")
-              : "—"}
+            <strong>Email verifisert:</strong> {user.emailVerified ? "Yes" : "No"}
           </p>
           <p>
-            <strong>Email verified:</strong> {user.emailVerified ? "Yes" : "No"}
+            <strong>Bruker ID:</strong> {user.uid}
           </p>
-          <p>
-            <strong>User ID:</strong> {user.uid}
-          </p>
+
+          <div className="mypage-nickname-card">
+            <p>
+              <strong>Kallenavn:</strong>{" "}
+              {loadingNickname ? "Laster..." : nickname || "Ikke satt"}
+            </p>
+            {nicknameError && <p className="post-form-error">{nicknameError}</p>}
+            <button
+              type="button"
+              onClick={() => {
+                void logUserClick(user.uid, {
+                  type: "profile_button_click",
+                  target: "open_nickname_editor",
+                  metadata: { page: "my_profile" },
+                });
+                setShowNicknamePopup(true);
+              }}
+            >
+              {nickname ? "Endre kallenavn" : "Sett kallenavn"}
+            </button>
+          </div>
+
           <a href="https://forms.office.com/Pages/ResponsePage.aspx?id=cgahCS-CZ0SluluzdZZ8BZ_gZpSo7_dPng7lyyEl-QpUQzBGSFdXREk3RlhaQTdIWEFJQUM1QzlZOC4u" target="_blank" rel="noopener noreferrer">
             Lenke til introduksjonsundersøkelse
           </a>
@@ -48,6 +120,23 @@ const MyPage: React.FC = () => {
       </div>
   
         <Badges />
+
+      <NicknamePopup
+        isOpen={showNicknamePopup}
+        title={nickname ? "Endre kallenavn" : "Sett kallenavn"}
+        description="Dette navnet brukes når du poster og kommenterer i forumet."
+        initialNickname={nickname}
+        submitLabel="Lagre"
+        onClose={() => {
+          void logUserClick(user.uid, {
+            type: "profile_button_click",
+            target: "close_nickname_editor",
+            metadata: { page: "my_profile" },
+          });
+          setShowNicknamePopup(false);
+        }}
+        onSubmit={handleSaveNickname}
+      />
      
     </div>
   );

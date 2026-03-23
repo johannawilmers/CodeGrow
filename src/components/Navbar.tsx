@@ -65,7 +65,7 @@ const Navbar = () => {
               })
             }
           >
-            Home
+            Hjem
           </NavLink>
           <NavLink
             to="/mypage"
@@ -79,7 +79,7 @@ const Navbar = () => {
               })
             }
           >
-            My Page
+            Min Side
           </NavLink>
           <NavLink
             to="/social"
@@ -93,7 +93,7 @@ const Navbar = () => {
               })
             }
           >
-            Social
+            Forum
           </NavLink>
         </div>
       </div>
@@ -115,7 +115,7 @@ const Navbar = () => {
           }}
           className="logout-button"
         >
-          Logout
+          Logg ut
         </button>
       </div>
     </nav>

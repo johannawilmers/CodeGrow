@@ -6,7 +6,7 @@ import { db } from "./firebase";
 import NavBar from "./components/Navbar";
 import Home from "./pages/Home";
 import MyPage from "./pages/MyPage";
-import Social from "./pages/Social";
+import Social from "./pages/Forum";
 import TaskPage from "./pages/TaskPage";
 import Login from "./components/Login";
 import TasksByTopicPage from "./pages/TaskByTopic";
@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 import SurveyPopup from "./components/SurveyPopup";
 
 import { validateStreak } from "./utils/validateStreak";
+import PostPage from "./pages/PostPage";
 
 function App() {
   const [showSurvey, setShowSurvey] = useState(false);
@@ -90,6 +91,7 @@ function App() {
             path="/topic/:topicId/edit"
             element={<TopicEditor />}
           />
+          <Route path="/social/:postId" element={<PostPage />} />
         </Routes>
       </Login>
     </BrowserRouter>

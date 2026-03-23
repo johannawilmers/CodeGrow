@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   collection,
+  doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
+  setDoc,
   type DocumentData,
 } from "firebase/firestore";
 import Post, { type SocialPost } from "../components/Post.tsx";
 import CreatePostOverlay from "../components/CreatePostOverlay.tsx";
-import { db } from "../firebase";
+import NicknamePopup from "../components/NicknamePopup.tsx";
+import { auth, db } from "../firebase.ts";
+import { logUserClick } from "../utils/clickLogger";
 import "../styles/socialFeed.css";
 
 const toDateFromUnknown = (value: unknown): Date | null => {
@@ -49,10 +55,7 @@ const toPost = (id: string, data: DocumentData): SocialPost | null => {
 
   const userId = typeof data.userId === "string" ? data.userId : "";
   const isAnonymous = data.isAnonymous === true;
-  const title =
-    typeof data.title === "string" && data.title.trim()
-      ? data.title.trim()
-      : "";
+  const title = typeof data.title === "string" ? data.title : "";
   const theme = typeof data.theme === "string" ? data.theme : "";
   const topic = typeof data.topic === "string" ? data.topic : "";
   const likesCount = typeof data.likesCount === "number" ? data.likesCount : 0;
@@ -74,12 +77,16 @@ const toPost = (id: string, data: DocumentData): SocialPost | null => {
   };
 };
 
-const Social = () => {
+const Forum = () => {
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateOverlay, setShowCreateOverlay] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [showNicknamePopup, setShowNicknamePopup] = useState(false);
+
+  const currentUser = auth.currentUser;
 
   const filteredPosts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -95,6 +102,57 @@ const Social = () => {
       );
     });
   }, [posts, searchQuery]);
+
+  useEffect(() => {
+    const loadNickname = async () => {
+      if (!currentUser) {
+        setNickname("");
+        setShowNicknamePopup(false);
+        return;
+      }
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        const storedNickname =
+          userDoc.exists() && typeof userDoc.data().nickname === "string"
+            ? userDoc.data().nickname.trim()
+            : "";
+
+        setNickname(storedNickname);
+        setShowNicknamePopup(!storedNickname);
+      } catch {
+        setNickname("");
+        setShowNicknamePopup(true);
+      }
+    };
+
+    loadNickname();
+  }, [currentUser]);
+
+  const handleSaveNickname = async (nextNickname: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    void logUserClick(user.uid, {
+      type: "forum_button_click",
+      target: "save_nickname",
+      metadata: { page: "forum" },
+    });
+
+    await setDoc(
+      doc(db, "users", user.uid),
+      {
+        nickname: nextNickname,
+        nicknameUpdatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    await user.updateProfile({ displayName: nextNickname });
+
+    setNickname(nextNickname);
+    setShowNicknamePopup(false);
+  };
 
   useEffect(() => {
     const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
@@ -121,28 +179,40 @@ const Social = () => {
 
   return (
     <div className="main-content social-page">
-      <h1>Social</h1>
+      <h1>Forum</h1>
+
+      {nickname && <p>Kallenavn: <strong>{nickname}</strong></p>}
 
       <div className="social-actions">
         <input
           className="social-search"
           type="search"
-          placeholder="Search posts by author, theme, topic or content..."
+          placeholder="Søk etter tittel, tema, emne eller innhold..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button type="button" onClick={() => setShowCreateOverlay(true)}>
-          Create post
+        <button
+          type="button"
+          onClick={() => {
+            void logUserClick(currentUser?.uid, {
+              type: "forum_button_click",
+              target: "open_create_post",
+              metadata: { page: "forum" },
+            });
+            setShowCreateOverlay(true);
+          }}
+        >
+          Opprett innlegg
         </button>
       </div>
 
-      {loading && <p>Loading posts...</p>}
+      {loading && <p>Laster innlegg...</p>}
       {error && <p>{error}</p>}
 
-      {!loading && !error && posts.length === 0 && <p>No posts yet.</p>}
+      {!loading && !error && posts.length === 0 && <p>Ingen innlegg enda.</p>}
 
       {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
-        <p>No posts match your search.</p>
+        <p>Ingen innlegg matcher søket ditt.</p>
       )}
 
       {!loading && !error && filteredPosts.length > 0 && (
@@ -157,8 +227,17 @@ const Social = () => {
         isOpen={showCreateOverlay}
         onClose={() => setShowCreateOverlay(false)}
       />
+
+      <NicknamePopup
+        isOpen={showNicknamePopup}
+        title="Sett kallenavn"
+        description="Sett et kallenavn før du bruker forumet. Du kan endre det senere på Min profil."
+        submitLabel="Lagre kallenavn"
+        allowClose={false}
+        onSubmit={handleSaveNickname}
+      />
     </div>
   );
 };
 
-export default Social;
+export default Forum;
