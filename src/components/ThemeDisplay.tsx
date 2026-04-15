@@ -101,8 +101,7 @@ const ThemesOverview = () => {
   if (loading) return <p>Loading themes…</p>;
   if (error) return <p>Error: {error}</p>;
 
-  // themes that should show their topics as coming soon (1-based)
-  const comingSoonThemeNumbers = new Set([ 16]);
+ 
 
   return (
     <div >
@@ -115,8 +114,8 @@ const ThemesOverview = () => {
 
           {themes.slice(0, 4).map((theme, idx) => {
             const themeDisplayNumber = idx + 1; // reset within block
-            const themeGlobalIndex = idx + 1; // global counting for badge
-            const isThemeComing = comingSoonThemeNumbers.has(themeGlobalIndex);
+            
+            
             return (
               <div key={theme.id} className="theme-block">
                 <h2>{themeDisplayNumber}. {theme.name}</h2>
@@ -147,9 +146,7 @@ const ThemesOverview = () => {
                           style={{ display: "block", width: "100%" }}
                         >
                           {topic.name}
-                          {isThemeComing && (
-                            <span className="coming-soon-badge">Coming soon</span>
-                          )}
+                          
                         </Link>
                       </li>
                     ))}
@@ -167,8 +164,7 @@ const ThemesOverview = () => {
 
           {themes.slice(4).map((theme, idx) => {
             const themeDisplayNumber = idx + 1; // reset numbering for second block
-            const themeGlobalIndex = 4 + idx + 1; // original global index for badge
-            const isThemeComing = comingSoonThemeNumbers.has(themeGlobalIndex);
+         
             return (
               <div key={theme.id} className="theme-block">
                 <h2>{themeDisplayNumber}. {theme.name}</h2>
@@ -199,9 +195,7 @@ const ThemesOverview = () => {
                           style={{ display: "block", width: "100%" }}
                         >
                           {topic.name}
-                          {isThemeComing && (
-                            <span className="coming-soon-badge">Coming soon</span>
-                          )}
+                        
                         </Link>
                       </li>
                     ))}
