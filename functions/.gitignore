@@ -35,4 +35,5 @@ dist-ssr
 *.sw?
 
 # Environment files
-.env.codegrow-5894a
+.env*
+!.env.example

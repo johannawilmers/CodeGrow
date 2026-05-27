@@ -11,6 +11,9 @@ node_modules
 
 dist
 dist-ssr
+.env
+.env.*
+!.env.example
 *.local
 
 # Editor directories and files
@@ -22,8 +25,6 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
+functions/.env*
+!functions/.env.example
 *.sw?
-
-
-src/adminPassword.ts
-src/pages/AdminPage.tsx

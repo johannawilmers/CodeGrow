@@ -1,12 +1,21 @@
 // Firebase configuration secrets
 // This file is in .gitignore to keep sensitive data out of version control
+const requireEnv = (key: keyof ImportMetaEnv) => {
+  const value = import.meta.env[key];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}. Copy .env.example to .env.local and fill in your Firebase values.`);
+  }
+
+  return value;
+};
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBlIltIs43cIXDG0Xyhn1bHPQcNVJsgefA",
-  authDomain: "codegrow-5894a.firebaseapp.com",
-  projectId: "codegrow-5894a",
-  storageBucket: "codegrow-5894a.firebasestorage.app",
-  messagingSenderId: "717569559294",
-  appId: "1:717569559294:web:724fb892509337a383b3af",
-  measurementId: "G-5BJVRH8BBG"
+  apiKey: requireEnv("VITE_FIREBASE_API_KEY"),
+  authDomain: requireEnv("VITE_FIREBASE_AUTH_DOMAIN"),
+  projectId: requireEnv("VITE_FIREBASE_PROJECT_ID"),
+  storageBucket: requireEnv("VITE_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: requireEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: requireEnv("VITE_FIREBASE_APP_ID"),
+  measurementId: requireEnv("VITE_FIREBASE_MEASUREMENT_ID"),
 };
